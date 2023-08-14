@@ -1,0 +1,637 @@
+Operator
+Good day, and welcome to the Daqo New Energy Second Quarter 2023 Results 
+Conference Call. [Operator Instructions].
+I'd like to turn the call over to Ms. [indiscernible], Investor Relations Director. Please 
+go ahead.
+Unidentified Company Representative
+Hello, everyone. I'm , the Investor Relations of Daqo New Energy. Thank you for 
+joining our conference call today. Daqo New Energy just issued its financial results 
+for the second quarter of 2023, which can be found on our website at 
+www.dqsolar.com.
+So today, attending the conference call, we have our new Chairman and CEO, Mr. 
+Xiang Xu; our former CEO, Longgen Zhang; CFO, Mr. Ming Yang and myself.
+So the call today will begin with an update from Mr. Zhang and our new Chairman 
+and CEO, followed by his comments on market and operations, and then Mr. Yang 
+will discuss the company's financial performance for the quarter and the year. And 
+after that, we'll open the floor to Q&A from the audience.
+So before we begin the formal remarks, I would like to remind you that certain 
+statements on today's call, including expected future operational and financial 
+performance and industry growth are forward-looking statements that are made 
+under the safe harbor provisions of the U.S. Private Securities Litigation Reform 
+Act of 1995.
+These statements involve inherent risks and uncertainties. A number of factors 
+could cause actual results to differ materially from those contained in any forward-
+looking statements. Further information regarding these and other risks is included 
+in the reports or documents we have filed with or furnished to the Securities and 
+Exchange Commission.
+These statements only reflect our current and preliminary view as of today and may 
+be subject to change. Our ability to achieve these projections is subject to risks and 
+uncertainties. All information provided in today's call is as of today, and we 
+undertake no duty to update such information, except as required under applicable 
+law.
+Also during the call, we'll occasionally reference monetary amounts in U.S. dollar 
+terms. Please keep in mind that our functional currency is the Chinese RMB. We 
+offer these translations into U.S. dollars solely for the convenience of the audience.
+So now I'll pass it on to Mr. Zhang.
+Longgen Zhang
+Thank you, . Good morning, good evening. Efficient operation of our polysilicon 
+facilities in the second quarter of 2023 resulted in the production volume of 45,306 
+metric tons, representing an increase of 11,458 metric tons as compared to the 
+previous quarter.
+As our Phase 5A 100,000 metric tons polysilicon project in Inner Mongolia reached 
+full production capacity in June. Our production cost decreased by 8.3% from Q1 to 
+¤6.92 per kg, primarily due to improvements in manufacturing efficiency as well as 
+a reduction in the cost of metallurgical grade silicon.
+For the quarter, we generated ¤230 million in EBITDA with strong operating cash 
+flow and continued to maintain a strong balance sheet with no financial debt. At the 
+end of the quarter, the company had a cash balance of ¤3.2 billion and a combined 
+cash and banking notes receivable balance of USD 4 billion.
+With an addition of our new Inner Mongolia Phase 5A facility, our total annual 
+polysilicon nameplate capacity has expanded to 205,000 metric tons. For the third 
+quarter, we expect our total polysilicon production volume to be approximately 
+55,000 metric tons to 57,000 metric tons, representing an increase of 21% to 26% 
+as compared to Q2 2023. Full year production is expected to be approximately 
+193,000 metric tons to 198,000 metric tons of polysilicon, representing an increase 
+of 44% to 48% as compared to 2022.
+In addition, based on our [Technical Difficulty] figure, our new semiconductor grade 
+polysilicon project with 1,000 metric tons annual capacity is expected to start pilot 
+production by the end of September of this year. With our fully digitized and highly 
+automated production system that optimizes operational efficiency, improves cost 
+structure and further enhances production product quality for the N-type 
+polysilicon product. We are confident that our Inner Mongolia project will further 
+enhance the company's competitive edge.
+The polysilicon industry experienced increased challenges and substantial price 
+volatility during the second quarter. Several new polysilicon facilities and new 
+entrants finally started production with some reaching full capacity -- production 
+capacity in the first half of this year. The shortage of polysilicon of the past 2 years 
+came to an end. The increased supply ultimately led to relatively oversupply and 
+excess industry inventory.
+In an effort to gain market shares with inferior quality products, new entrants and 
+some established industry players engaged in aggressive pricing, expectations of 
+lower future pricing in the market led to delays and reductions of downstream 
+customer orders, as well as aggressive pricing required by customers.
+The situation wasn't significantly in the second half of May, as inventory reduction 
+efforts by leading producers led to race to the bottom that saw polysilicon prices 
+decline by approximately 70% at the end of the second quarter compared to Q1 
+levels. In the second half of June, polysilicon prices reached bottom and customers 
+began ordering aggressively at the lower prices.
+By middle of July, we saw an approximately 15% to 20% price recovery compared to 
+the bottom reached in June. Recently, we have also seen an increase in the ASP 
+premium for N-type polysilicon with a meaningful increase in demand volume. We 
+expect that this trend will further benefit us as the industry transitions to next-
+generation N-type technology.
+We shipped 53,502 metric tons of polysilicon in Q2, meaningfully more than our 
+production level and a substantial increase over Q1 shipments. Polysilicon 
+inventory at our original Xinjiang facility decreased to less than a week's production 
+volume, as our facility in Inner Mongolia is newly established its products require 
+customer qualification before we can ship meaningful volumes to customers, and 
+the qualification process took longer than anticipated due to market volatility 
+during the period.
+At the end of the quarter, with customer orders on hand that covered all our 
+inventory, we had practically sold all shippable products, the customer qualification 
+process for the products of our Inner Mongolia facility completed successfully in 
+July. And at the end of July, with brisk customer orders and demand, we had 
+further reduced our polysilicon inventory to a very healthy level of approximately 1-
+week of production across our 2 facilities.
+For the second quarter, we recorded approximately USD 19.7 million in foreign 
+exchange loss, or approximately ¤0.26 per ADS. Near the end of April, the company 
+received approximately RMB 4.96 billion in cash dividends from its subsidiary 
+Xinjiang Daqo, which was approximately USD 716.7 million based on the exchange 
+rate on the date the dividend funds were received.
+During the quarter, the company converted approximately RMB 1.85 billion to U.S. 
+dollar to fund our share repurchase program, as the USD to Renminbi currency -- 
+Chinese currency exchange rate fluctuated significantly during the month of May 
+and June. And as required by accounting standards, we recorded an unrealized 
+foreign exchange loss, primarily related to our quarter end cash balance of RMB 3.1 
+billion held by the company in an offshore accounts.
+Regarding the company's share buyback program. At the end of July, the company 
+had already repurchased 4.16 million ADS for approximately USD 188.7 million 
+under the current program with average cost of approximately USD 45.32 per ADS 
+combined with the program completed in 2022. In aggregate, the company has 
+already repurchased 6 million ADS for approximately USD 308.6 million.
+The continuous cost reduction in solar PV products and the associated reduction in 
+solar energy generation costs are expected to create substantial additional green 
+energy demand, which is likely to exceed most analysis expectations. It is generally 
+expected that solar PV will eventually become one of the most important energies 
+to power the world.
+In addition, as the solar PV technology keeps evolving, we believe that the 
+increasing needs for polysilicon of very high purity, such as N-type polysilicon will 
+help differentiate us from our competitors, while most of our competitors will likely 
+struggle with the current market environment. Daqo New Energy has one of the 
+best balance sheets in the industry with no financial debt, and this will help us with 
+the current market environment successfully.
+We are optimistic that as the solar end market continues to grow and as our 
+customers continue to expand capacity, particularly for N-type solar products, 
+prices will improve. We will continue to maintain solid growth and capture the long-
+term benefits of growing global solar PV market.
+Moving to outlook and guidance. The company expects to produce approximately 
+55,000 metric tons to 57,000 metric tons of polysilicon during the third quarter of 
+2023. The company expects to produce approximately 193,000 metric tons to 
+198,000 metric tons of polysilicon for the full year of 2023, inclusive of the impact 
+of the company's annual facility maintenance.
+This outlook reflects Daqo New Energy's current and preliminary view as of the date 
+and this press release and may be subject to change. The company's ability to 
+achieve these projections is subject to risks and uncertainties. See safe harbor 
+statement at the end of this press release.
+Now I will turn to -- the call to our CFO, Ming. Please go ahead.
+Ming Yang
+Thank you, Longgen, and hello, everyone. Thank you for joining our earnings 
+conference call today.
+Now I will discuss our financial results for the second quarter of 2023. Revenues 
+were ¤636.7 million compared to ¤709.8 million in the first quarter of 2023 and 
+¤1.24 billion in the second quarter of 2022. The decrease in revenue compared to 
+the first quarter of 2023 was primarily due to a decrease in average selling prices, 
+mitigated by increase in sold volume.
+Gross profit was ¤258.9 million compared to ¤506.7 million in the first quarter of 
+2023 and ¤947 million in the second quarter of 2022. Gross margin was 40.7% 
+compared to 71.4% in the first quarter of 2023 and 76% in the second quarter of 
+2022. The decrease in gross margin compared to the first quarter of 2023 was 
+primarily due to lower average selling prices, which was partially mitigated by lower 
+production costs.
+Selling, general and administrative expenses were ¤43.3 million compared to ¤41.3 
+million in the first quarter of 2023 and ¤14.4 million in the second quarter of 2022. 
+The slightly higher SG&A expenses compared to the previous quarter was due to 
+higher shipment volume that resulted in higher shipping expenses.
+SG&A expenses during the second quarter also includes ¤27.5 million in noncash 
+share-based compensation costs related to the company's share incentive plans 
+compared to ¤28 million in the first quarter of 2023.
+R&D expenses were ¤2.2 million compared to ¤1.9 million in the first quarter of 
+2023 and ¤2.7 million in the second quarter of 2022. R&D expenses vary from 
+period to period and reflect R&D activities that take place during the quarter. And 
+most of our R&D activities for the quarter related to product purity improvement-
+related activities.
+Foreign exchange losses were ¤19.7 million compared to 0 in the first quarter of 
+2023 and also in the second quarter of 2022. The significant volatility and 
+fluctuation in the U.S. dollar to Chinese New Year exchange rate during this quarter 
+resulted in primarily an unrealized foreign exchange loss related to our quarter end 
+cash balance of RMB 3.1 billion held by the company in an offshore account.
+And as a result of the above mentioned, income from operation was ¤214 million 
+compared to ¤463.8 million in the first quarter of 2023 and ¤927.6 million in the 
+second quarter of 2022. Operating margin was 33.6% compared to 65.3% in the 
+first quarter of 2023 and 74.6% in the second quarter of 2022.
+Net income attributable to Daqo New Energy shareholders was ¤103.7 million 
+compared to ¤278.8 million in the first quarter of 2023 and ¤627.8 million in the 
+second quarter of 2022. Earnings per basic ADS was ¤1.35 compared to ¤3.56 in 
+the first quarter of 2023 and ¤8.36 in the second quarter of 2022.
+Adjusted net income, non-GAAP attributable to the Daqo New Energy shareholders, 
+including noncash share-based compensation costs, was ¤134.5 million compared 
+to ¤310 million in the first quarter of 2023 and ¤630 million in the second quarter of 
+2022. Adjusted earnings per basic ADS was ¤1.75 compared to ¤3.96 in the first 
+quarter of 2023 and ¤8.39 in the second quarter of 2022.
+EBITDA was ¤230 million for the quarter compared to ¤490 million in the first 
+quarter of 2023 and ¤955 million in the second quarter of 2022. EBITDA margin was 
+36% compared to 69% in the first quarter of 2023 and 76.8% in the second quarter 
+of 2022.
+Now on the company's financial condition. As of the June 30, 2023, the company 
+had ¤3.169 billion in cash, cash equivalents and restricted cash compared to ¤4.1 
+billion as of March 31, 2023, and ¤3.3 billion as of June 30, 2022. As of June 30, 
+2023, the noticeable balance was ¤798.5 million compared to ¤791 million as of 
+March 31, 2023, and ¤1.27 billion as of June 30, 2022. Notes receivables represent 
+bank notes with maturity within 6 months.
+And now on the company's cash flow. For the 6 months ended June 30, 2023, net 
+cash provided by operating activities was ¤786 million compared to ¤1.13 billion in 
+the same period of last year. And for the 6 months ended June 30, 2023, net cash 
+used in investing activities was ¤495.7 million compared to net cash used in 
+investment activities was ¤80 million in the same period of 2022.
+Net cash used in investment activities in the first half of 2023 was primarily related 
+to the capital expenditures on the company's polysilicon project in Baotou City, 
+Inner Mongolia. And for the 6 months ended June 30, 2023, net cash using finance 
+activities was ¤477.5 million compared to net cash provided by financing activities 
+was ¤1.58 billion in the same period of 2022.
+The net cash used in financing activity in the first half of 2023 was primarily related 
+to ¤174 million in the company's share repurchases and ¤306.6 million in dividend 
+payments made by the company Xinjiang Daqo subsidiary to its minority 
+shareholders.
+And that concludes our prepared remarks. And operator, we will now open the floor 
+for questions.
+Question-and-Answer Session
+Operator
+[Operator Instructions]. First question will be from Philip Shen of ROTH MKM.
+Philip Shen
+Longgen, sorry to see you leave. And I was wondering if you could touch on your 
+personal situation and give us some color as to timing and detail around what you 
+might do next? It sounds like from the release that you're leaving effective 
+immediately, but you're on the call today. So just curious, if there's anything you 
+can share?
+Longgen Zhang
+Thank you, Philip. I think I'm working for the company more than 5 years, and I 
+know everybody well. And -- then also, remember, our new CEO and Chairman, his 
+stay in Daqo is longer than me. Basically, he also knows this industry very well. 
+Even during the past 5 years, we were working together. And so I think giving 
+personal -- I think family personal reason, I'm leaving, but I think still I turn over the 
+control to Mr. Xu. I think -- I hope -- I think he will direct the company to the next 
+high step.
+Did I answer your question, Philip?
+Philip Shen
+Yes. Shifting over to pricing. You talked about the dynamics of how pricing fell in 
+Q2, and then there was a bit of a recovery. Can you talk about what you see for 
+polysilicon pricing in Q3, Q4 and also 2024? How much higher or lower could poly 
+pricing go in 2024?
+Longgen Zhang
+I think in last year Q4, during the seasonal and also some downstream clients, I 
+think they're planning to stop demand, shut down the capacity. So almost the 5 
+bigger polysilicon plants have the inventory by the end of last year. And -- but as 
+the Q1, when -- because Chinese New Year is coming in February, so demand 
+immediately come up.
+So in Q1, the price continue to go up back from, I think, Q4, the bottom almost RMB 
+80 per kg to 240, but really, because I think new entrants, the inventory, I think, 
+digested. So in Italy, I think to buy, I think in May and June, the price continue go 
+down. especially, I think in June, the price almost go down to the bottom.
+Basically, I think breakeven even, I can call. RMB go to like RMB 55 to RMB 60. 
+Then for some reason, as you know that, by the end of last month, I think 2 
+companies, I'm not mentioning, okay, they have -- I think the facilities have some 
+sparing the bomb you see, almost one of the big players, almost stop Xinjiang all 
+production.
+So I think right now, besides I think the market come back, the order is coming, I 
+think, in the pipeline, especially some order in [indiscernible] is continuing, we see 
+in Q3, Q4. So the demand right now is a little high. So the price right now back like 
+N-type is around RMB 83 to RMB 85 per kg. The P-type, I think, is around like RMB 
+65 -- RMB 63, RMB 65 per kg.
+So we think in Q3, we see is very profitable. I think in this situation will continue 
+lasting to October. Then during November and December, another, I think, seasonal 
+come up, the winter is coming. The Western country maybe the Christmas Day, then 
+Chinese New Year is coming. So I think during November, December or January and 
+February, the price definitely go to deep again.
+Also, I think as other, if you like -- like Daqo Mongolia, we have full capacity 
+running. Then like TBEA, they also -- the first project in Mongolia is not very 
+successful, okay? Last year, they started trial production, still not full capacity 
+running. But they will now tell the market, they were capacity running by next 
+month.
+So we see the supply has continued to go up. So I think the next year, the 
+polysilicon price, even next 2 years, especially, I think very clear, the polysilicon 
+produced in China right now, is a different price from polysilicon produced outside 
+of China. For example, like Wacker, OCI because they can easily to traceability to 
+export use their silicon produce final products export to U.S.
+Right now, I think next 2 years, Chinese polysilicon maybe were stable, maybe 
+between, I think, around RMB 60 to around RMB 70 -- between RMB 75, I think like 
+that channel. That's what I'm thinking, okay. Then I think this also will push, I think, 
+some Chinese producer -- silicone producer will move outside to China to other 
+locations outside of China to produce silicon.
+As you can see that like in U.S. IRA already attract a lot of company, right now 
+Chinese company to do the module, I think, sell even waiver. So I think that 
+tendency will continue to come in. So I think globally, I think after 2 to 3 years, I 
+think the Chinese maybe [indiscernible] the capacity is not only silicon, maybe 
+wafer cell always oversupply right now.
+So that's why cost of module price right now from RMB 2 per watt down to like near 
+RMB 1.4 per watt. Definitely the good thing because returns on projects is higher. 
+But that may be stimulate the installation, but also a lot of installation continue 
+going on the market demand and in-store, then go to grid also have come -- have 
+problems, especially in China.
+So it's all trade-off. You're thinking you see the module price go down, maybe you 
+will increase II on the project. But in the meantime, you see the connect to the grid 
+delay also will affect the returns on II. So -- but China right now, the market is so 
+hot, we think the rooftop, the SOE , I think it's all going on.
+So I don't think any problem. Within 2 years, I think Europeans continue to go -- I 
+think continue to grow. The only thing the over-label force action in Europe is 
+starting 2025 Q2. So I think that's give time to the Chinese producer to move the 
+production outside of China. So I think that's -- you see my -- what I'm thinking to 
+the whole market in the future.
+But remember, Daqo is the only one in China right now, know that produce high-
+quality products can compete with Wacker. So especially, I think as the N-type 
+silicon continue to grow, we already see the price difference between N-type and P 
+is around right now RMB 8 to RMB 10 per kg. So our advantage is very clear. If you 
+look at our Q2, I think the gross margin is almost more than 50%. I think we still can 
+keep our gross margin even, let's say, in Q3, Q4, still above -- even Q4 still above 
+30%. I think 20% is our premium compared with other players, competitors based 
+on the quality and the cost effective and the scale.
+Philip Shen
+Great. That was a lot of color. You said something very interesting just now about 
+how China -- Chinese producers could launch and ramp capacity outside of China 
+to serve the U.S. and other -- maybe even Europe.
+Longgen Zhang
+Middle East.
+Philip Shen
+So I was wondering if you could highlight -- right. So can you talk about -- like do 
+you guys have plans to ramp up facilities outside of China? And then how many 
+metric tons do you see? Are there announcements already of who could be 
+ramping? And which countries and what's the timing of when those things -- when 
+those facilities could ramp?
+And then also, you talked about this price delta between Chinese and non-Chinese 
+polysilicon pricing. Can you talk about what the magnitude of that premium is? A 
+few -- a couple of months ago, I think it was something around ¤10 delta. What is 
+the non-China poly price now? And do you expect that difference to maintain? Or do 
+you think that could get closer over time?
+Longgen Zhang
+Basically, if you look at the figure today, outside of China silicon, majority is 
+Wacker, OCI and Hemlock. I think add together, it's around 80,000 tons. That 
+cannot meet, I think, even U.S. market, 50 GW, let's say, 50 GW, I think, needed at 
+least, I think, 120,000 metric tons, right? Of course, I think the U.S. is not only just 
+polysilicon module. There may be also same thing in other stuff.
+So we see, basically, I think Europe, U.S. U.S. is a typical market is not only besides 
+you see the -- I think I stimulus because also the political issues. For example, the 
+antidumping, the tariff, all the stuff, CBD, AD and plus, I think, over-label force that 
+reaction. All these, I think, you can see today, for example, like Trina, I think they 
+use Wacker materials produced in Vietnam from wafer cell module. This can easily 
+selling, I think the module to U.S. around ¤0.40 per watt.
+Also, I think [indiscernible] do the same thing. So I think in the U.S. market right 
+now, the market can absorb high module price. It's already there, I think. Then as I 
+think the U.S. market continue asking for -- from I think model to cell and wafer 
+step-by-step required localization materials, I think that will push the capacity from 
+module, cell and silicon.
+The same situation, I think, will happen in Europe. So Europe, I think from you have 
+to -- I think in the future, I think -- I'm not remember that maybe 85% or 65%, you 
+have localization. So that's why I think a lot of Chinese single player will move to 
+Europe.
+But today, you see I think the production ecosystem, I think the environmental, I 
+think Middle East, Southern Asia, maybe same as China, I think it can produce, I 
+think, the lowest cost the effective module products. So it's a lot of right now, 
+company right now because I think go to the Middle East, like Saudi, UAE and 
+Oman, Qatar because they have 20, 30 versions in the Middle East and also the 
+strong relationship right now political relations with China.
+So we see a lot of China -- you see also a lot of news come out. You can see CECL 
+the news with the industry, right? You can see that. And also U.S., you also can see, 
+I think, LONGi, Jinko expansion in U.S. and Europe, then a lot of right now, I think, 
+not only module, but also, I think the wafer capacity right now is moving to Europe.
+So I think this has happened. I think, become global production, global products. 
+That's a good thing. I think -- that's also very easy. I think the market demand and 
+supply become more healthy.
+Philip Shen
+Great. Just a follow-up...
+Longgen Zhang
+Yes.
+Philip Shen
+Sorry to interrupt you. Just to kind of focus the conversation a little bit. Just I 
+thought you were referring to Chinese polysilicon producers ramping facilities in 
+the -- outside of China. Do you -- are you aware of any of those activities? And do 
+you think you might ramp polysilicon production facilities outside of China? And if 
+so, where would that still be the Middle East and maybe Southeast Asia or would 
+that be some other locations?
+Longgen Zhang
+I think it definitely is, I think, a very -- I think the economic stimulus to attract 
+Chinese producer to move outside of China to produce the silicon. But if you 
+remember that silicon plant is capital-intensive, also environmental, and also in the 
+chemical industry. So the design, the permits, all this, I think, is very high.
+Daqo also did a lot of research. For example, if we go to U.S., maybe taking 5 years 
+to finish the construction, then 10x the total investment. So it's impossible for us to 
+set the plants in any Chinese, I think, producer to set the plants in U.S. Then if you 
+go to other places like Middle East, you have considering.
+If you set up plants in outside of China, what's the competitive edge, right? If the 
+cost of the final product is still used in the local, then it's no competitive edge. The 
+only chance is traceability the products can go to Europe, go to the U.S. than 
+meeting some.
+Today, if you look at the PV link, I think last week, I think, Wacker, I think 
+international polysilicon ¤27 to, I think, ¤35 whatever. And China right now is 
+around like ¤10 to ¤11. So the difference is there. I think that will continue to exist 
+the reason because the -- I just mentioned that outside of China, silicon only 
+80,000 tons.
+There's no way within 2 years can increase. We also didn't see any existing player, 
+for example, OCI, Wacker, Hemlock, their expansion. So we also didn't see any 
+Chinese producer is going to -- planning to set plants outside of China. At least 
+right now, we didn't see any news.
+Daqo is a little different because we right now, I think, a list in U.S. then also listing 
+Asia. So for a U.S. company, we cannot compete business with, I think, Asia 
+company. So the silicon we only can do the Asia. So that's we'll be careful. I think 
+with the new Chairman and CEO, I think Mr. Xu, I think he has the future planning. I 
+think yes, we are looking at a study anytime if possible.
+Philip Shen
+Okay. That's really very good color. One last question for me. We recently wrote that 
+LONGi's the tained product in the U.S. using Tongwei poly from maybe 4 or 5 
+months ago, that was the tained was denied entry into the U.S. I know you're 
+ramping your Inner Mongolia facilities now.
+What is your -- what do you think your ability is to import your poly through 
+Southeast Asia into the U.S. now? Are you a little bit more pessimistic given the 
+LONGi's situation? Or are you still optimistic because you have traceability to the 
+port site?
+Longgen Zhang
+Frankly speaking, I'm very pessimistic. The reason is because Tongwei -- of course, 
+Tongwei's situation is may be a little different. At least they are, I think, have 
+different locations. I think the U.S. customer, I think depend LONGi the reason 
+because as Tongwei on the whole global, they maybe use Xinjiang silicon store. 
+They cannot improve they didn't use, right?
+So yes, we have to see because at this moment, because of critical, I think, conflict, 
+I think, what I want to say is difficult to clear any player right now can be 
+traceability. Any silicon produced in China can be pass the traceability to export to 
+U.S. But -- if we can do to show in Mongolia, starting from all to industry silicon to 
+silicon powder to silicon producer, the whole value chain to show, I think we don't 
+know, right? We have to try it, right? So I can tell you, but we will make our efforts.
+Operator
+Our next question will be from Alan Lau, Jefferies.
+Alan Lau
+Happy to hear Longgen is moving on. And thanks for the contribution to the 
+company as well in the past year. So my first question is what is the CapEx plan for 
+the remaining of this year and next year?
+Ming Yang
+Okay. So if you look at the CapEx plan, okay, so I would say in the first half, right, so 
+I think for -- from our financial statements, are approximately ¤495.7 million was 
+used in investing activities, and that's pretty much used for CapEx, mostly related 
+to our Inner Mongolia Phase 2. And some of it is [indiscernible] Mongolia Phase 1.
+And then for the second half, we're currently planning an additional ¤750 million in 
+CapEx. In aggregate, this is mostly used for Inner Mongolia Phase 2, which is under 
+construction, right, now. And then less than ¤100 million will be in the final 
+payments to Inner Mongolia Phase 1.
+So I think in aggregate, for the full year, we were planning roughly ¤1.25 billion in 
+CapEx. So that's the current CapExn plan right now.
+Alan Lau
+So another question is, since the average selling pol price in Q2 is lower than the 
+average market price in the market, so I would like to ask how -- is the company 
+selling more in July -- June instead of April? And what is this -- what is the split 
+between the different months because the prices have been declining also?
+Longgen Zhang
+First of all, I don't know where you got the ASP -- market ASP, then you can make a 
+decision we are below ASP. But I can tell you because we are as a company digest 
+all the inventory. So basically, yes, we're sliding -- our price is very competitive, but 
+compare our quality, I still think is challengeable. We still is very profitable.
+So if you look at Tongwei, I think their whole industry together, I think the increase -
+- the profit in the second quarter almost cutting half less than half. We still have 
+more than 50% increase hail -- couple of half, more than high than the half. So I 
+don't think you -- it's apple-to-apple. I still think we're selling pretty good, I think, 
+ASP to the good clients, yes.
+Alan Lau
+Because they are guiding that they are selling at around RMB 120 per kilogram, so I 
+saw our numbers around 97 or 98, including tax. So that's why that's a question. 
+Maybe there's some timing difference. I'm not sure.
+Longgen Zhang
+Yes. It's maybe not apple-to-apple. Really, we're not to comment another company, 
+but that's a factor. We are -- I think the figure we tell you.
+Alan Lau
+Understand. So how about the share buyback pace because -- since the buyback in 
+Q2 was not very aggressive. So can I assume the company will accelerate the 
+buyback in Q3 because you have more than ¤500 million left?
+Ming Yang
+So yes, I think we still have ¤500 million -- more than ¤500 million left on the 
+company's -- the parent company's balance sheet in the offshore account, which we 
+will use for the share buyback program. And the share buyback program continues 
+to be in place and has not been changed.
+And certainly, we will look forward to support the share price especially now with 
+the new Chairman and CEO onboard. And I think as well our new plans for the 
+company. And certainly, I think and obviously subject to for some market 
+conditions, our share price and other factors, things like that, but we will continue 
+to execute on our share buyback program.
+Longgen Zhang
+But we assure I think we're going to finish the ¤700 million purchase program, right, 
+by the end of the year.
+Ming Yang
+That's the current expectation.
+Longgen Zhang
+I think that's right.
+Alan Lau
+So yes, that's quite positive. And my last question is -- what is the view on 
+aggressive expansion by others? Because some of the peers are actually having 
+concrete due diligence in Saudi. So I wonder if we are also investigating the 
+expansion plan in Saudi or other places where we see more relevant or more 
+feasible for us?
+Ming Yang
+Okay. We did investigate in overseas expansion in the past, actually quite actively, 
+and we did actually even sent our teams overseas to do due diligence. And we 
+continue to think and there are a lot of challenges to overseas expansion, 
+particularly, for example, around the higher production costs and the sustainability 
+of the price premium and as well as the market opportunities. So we certainly are 
+continuing to monitor the various opportunities, but I think as of now, the company 
+has no plan to do overseas expansion right now.
+Operator
+The next question will come from Ji Chao of Goldman Sachs.
+Ji Chao
+Can I ask what's the portion of the N-type poly for the first half this year? And how -
+- what kind of a portion would you expect for the full year? And also, we note that 
+the second quarter operating cash flow is actually negative. Can you also share why 
+is that?
+Ming Yang
+Okay. Ji Chao, thank you very much for your questions.
+So with regard to N-type, so the percentage keeps improving. So in Q1, it was 
+roughly in the range of 10% to 20%. And actually, for Q2, we've already increased it 
+to the range of 20% to 30%, I think based on the company's, both in the market 
+conditions and the market demand from the customers and also the price premium 
+and that's afforded in the market.
+So I think towards the end of Q2, now that price premium is in RMB 10 to RMB 15 
+per kilogram range for N-type relative P-type, we are actually modifying our 
+process and optimizing our process to produce more N-type. I think in the second 
+half, right now, our expectation is that N-type will constitute somewhere between 
+30% to 50% of our production.
+So obviously, Xinjiang is a more mature process and -- but the equipment has a 
+little bit more limitation on the entire percentage, but we think we can improve it 
+further. But Inner Mongolia is in the process of improving its quality and ramping 
+up. So we're very optimistic that over time, the Inner Mongolia N-type percentage 
+will increase meaningfully.
+Let me follow-up on the second question. Can you repeat your second question 
+again?
+Ji Chao
+Sure. The second quarter operating cash flow seems to be negative. Can I ask why 
+is that?
+Ming Yang
+The negative is -- for the 6 months, we had ¤786 million, I think the operating cash 
+flow.
+Ji Chao
+Right, right. But it seems that the first quarter cash flow is like more than ¤800 
+million. So it seems like the second quarter is slightly negative?
+Ming Yang
+It's probably related to our bank note sales. Let me follow-up with you on the topic.
+Operator
+Next question will be from [indiscernible].
+Unidentified Analyst
+So my question is, so we have changes in our management team. And I want to ask 
+due to our [indiscernible] management, do we have plan to launch new business or 
+do new investments?
+Longgen Zhang
+I think the change of the new management team, I think Mr. Xu is the Chairman and 
+CEO new. I think he's also the biggest shareholder and the controller -- and the Asia 
+controller. I think yes, maybe I think in the future, definitely, we were looking to do 
+some study. But we still, I think we're focused on our existing business.
+And as we lay down 3- to 5-year strategy, you see extremely do in the industry 
+silicon metal, then also we were the poly, I think 1,000 semiconductor products is 
+welcome our -- are start production starting, I think, Q3. So our strategy didn't 
+change. Of course, we are looking at other opportunities, maybe overseas, maybe 
+downstream. But right now, we will announce there really.
+Unidentified Analyst
+Okay. And my next question is do we consider to go in private because we have a 
+lot of cash and this cash maybe somehow cover our market cap. So do you 
+consider to go private?
+Longgen Zhang
+I think privatization -- with going to privatization is not management team to make 
+decision and we have to go through the whole shareholders. But definitely, one 
+thing is clear, I think the valuation between Asia and U.S. share is -- the difference 
+is higher.
+So right now, we only have a channel is going to throw Asia to declare dividends to 
+buyback the U.S. shares. So it's anti-diluted. As you can see, right? So I think we 
+think that the price can continue as the variation in U.S. market can continue to go 
+up.
+But I want to remind you, by the June 23 -- July 23 next year does mean after we 
+IPO in Asia after 3 years, the U.S. company holding 73% of Asia, we can sell it, start 
+reselling. So that means we have another channel. We can sell the Asia to get the 
+money then back to U.S. market to buyback the U.S. shares.
+So basically, we think in the future, if the valuation is so different, you see, we can 
+sell that to [indiscernible] definitely we will reduce the circulating shares, you see. 
+And that's, I think, to push in the market, right? But with privatization, I don't think 
+so for long-term because we also want to U.S. shareholders to get -- to share our 
+benefits.
+Operator
+Our next question will be from Leo Ho [indiscernible].
+Unidentified Analyst
+This is Leo Ho from Daiwa Capital Markets. A couple of questions. I would like to 
+ask one by one if I may.
+The first question is regarding share buyback. I just would like to confirm that, so 
+our current plan is that we are going to spend the entirety of the USD 700 million 
+within this year. Am I correct?
+Ming Yang
+I would say -- let me just say that I think with some ¤700 million program is in 
+place. And I think there has been no changes to that. I think certainly, the company 
+and the management team will continue to monitor the market and repurchase the 
+shares. Yes. I think based on the share repurchase program, yes.
+Unidentified Analyst
+My second question is regarding the second quarter production number. I noticed 
+that we have produced 45,000 tons eventually. But according to your first quarter 
+guidance, we should be producing around 55,000 tons in the second quarter. May I 
+know what is the reason behind the 10,000-ton discrepancy? Are we doing like any 
+retrofit for our old or new capacity? What's the reason behind? And if we are doing 
+retrofit, can you briefly tell us what capacity or which -- in which provinces that we 
+are doing?
+Ming Yang
+I think I'm just looking at our previous guidance. I think we guided to 44,000 to 
+46,000 tons of production for Q2. So we actually produced more -- pretty much in 
+line with our previous guidance. So it is basically in line. I think as we ramp up our 
+Inner Mongolia as we expected. And then it's for the Q2 that was not what we're 
+expecting, in, I think, 55,000 to 57,000 metric tons. So that's reflecting the full 
+ramp-up of the Inner Mongolia facility.
+Unidentified Analyst
+So are we doing any like retrofit in the second quarter?
+Longgen Zhang
+I think if you look at the end of Q1, we have inventory almost, I think tons. So in Q2, 
+we produced 45,000 tons. So then we're selling 51,000 tons, almost 52,000 tons. 
+So we still have some -- an inventory in Q2. It's 10,000, 450,000 -- yes, it's a 10,550 
+tons. So I think the figure is correct.
+Unidentified Analyst
+Okay. Okay. Just a few more question. I just want to know; do we have any forecast 
+for the N-type product within our total production mix for 2024? And also, I would 
+like to know at this point in time, aside from us how many producers in the market 
+do you see are capable manufacturing N-type polysilicon at large scale?
+Ming Yang
+So I think for 2024, we expect N-type to be greater than 50%. I think, in fact, I think 
+once we'll fully ramp up in terms of our updates to our optimization of our process, 
+we should have N-type in the range of 70% to 90% for the company, especially for 
+next year.
+The internal number of producers, I think right now, we are one of the largest 
+producer of N-type and supplier of N-type producers in the market. I think the other 
+main producers include Wacker and then some from Asia silicon and then some 
+from [indiscernible], but I think they are the main ones.
+Unidentified Analyst
+My last question is on joint ventures. I think for amongst large polysilicon 
+producers in China, it seems like we are the only one without any joint venture with 
+downstream customers. Are we planning to form any joint venture in the future? 
+And why we didn't form any of them in the past?
+Ming Yang
+I mean we won't roll this possibility out. I think in the past, we want to be kind of a 
+pure play and really the primary merchant supplier of polysilicon. And I think that 
+benefited us very well, especially last year, where I think some of our peers have 
+had a JV partners or minority investors have to where we have shared a lot of their 
+offshore income with the shareholders.
+So obviously, I think with the recent market trends, actually, a number of customers 
+have approached us and indicated the interest in doing minority or JV investments. 
+So that is something that we are in discussion, but there's nothing in concrete to 
+report.
+Operator
+[Operator Instructions]. Our next question comes from [indiscernible] with Nomura.
+Unidentified Analyst
+My question actually was raised earlier, is about the privatization comment. So no 
+further questions from me.
+Ming Yang
+Great. Great. Thank you. Thanks for joining our call.
+Operator
+This concludes our question-and-answer session. I'd like to turn the conference 
+back over to for closing remarks.
+Unidentified Company Representative
+Yes. Thank you, everyone, again for participating in today's conference call. Should 
+you have any further questions, please don't hesitate to contact us. Thank you and 
+have an awesome day. Goodbye.
+Operator
+The conference has now concluded. Thank you for attending today's presentation. 
+You may now disconnect.
+
