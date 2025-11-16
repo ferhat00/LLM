@@ -1,0 +1,2448 @@
+{
+ "cells": [
+  {
+   "cell_type": "markdown",
+   "id": "ef8e4df5",
+   "metadata": {
+    "papermill": {
+     "duration": 0.006199,
+     "end_time": "2025-11-16T18:38:04.600344",
+     "exception": false,
+     "start_time": "2025-11-16T18:38:04.594145",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "# Supply Chain Prediction - Kaggle Competition\n",
+    "## Random Forest & XGBoost with Feature Engineering\n",
+    "### Memory-Optimized Version for GPU (P100/T4)\n",
+    "\n",
+    "This notebook predicts:\n",
+    "- **MasterItemNo** (Classification)\n",
+    "- **QtyShipped** (Regression)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "6392a4cd",
+   "metadata": {
+    "papermill": {
+     "duration": 0.004684,
+     "end_time": "2025-11-16T18:38:04.610003",
+     "exception": false,
+     "start_time": "2025-11-16T18:38:04.605319",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "## 1. Setup and Imports"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "b92dffad",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-16T18:38:04.620581Z",
+     "iopub.status.busy": "2025-11-16T18:38:04.620320Z",
+     "iopub.status.idle": "2025-11-16T18:38:08.758076Z",
+     "shell.execute_reply": "2025-11-16T18:38:08.757176Z"
+    },
+    "papermill": {
+     "duration": 4.145565,
+     "end_time": "2025-11-16T18:38:08.760267",
+     "exception": false,
+     "start_time": "2025-11-16T18:38:04.614702",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "# Install required packages\n",
+    "!pip install xgboost scikit-learn pandas numpy matplotlib seaborn -q"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "c1a622b4",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-16T18:38:08.772092Z",
+     "iopub.status.busy": "2025-11-16T18:38:08.771353Z",
+     "iopub.status.idle": "2025-11-16T18:38:12.076304Z",
+     "shell.execute_reply": "2025-11-16T18:38:12.075376Z"
+    },
+    "papermill": {
+     "duration": 3.312134,
+     "end_time": "2025-11-16T18:38:12.077610",
+     "exception": false,
+     "start_time": "2025-11-16T18:38:08.765476",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Libraries imported successfully!\n",
+      "XGBoost version: 2.0.3\n"
+     ]
+    }
+   ],
+   "source": [
+    "import pandas as pd\n",
+    "import numpy as np\n",
+    "import matplotlib.pyplot as plt\n",
+    "import seaborn as sns\n",
+    "from datetime import datetime\n",
+    "import warnings\n",
+    "import gc\n",
+    "warnings.filterwarnings('ignore')\n",
+    "\n",
+    "# Machine Learning\n",
+    "from sklearn.model_selection import train_test_split, KFold, cross_val_score\n",
+    "from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor\n",
+    "from sklearn.preprocessing import LabelEncoder, StandardScaler\n",
+    "from sklearn.metrics import accuracy_score, mean_absolute_error, mean_squared_error, r2_score\n",
+    "import xgboost as xgb\n",
+    "\n",
+    "# Set random seed for reproducibility\n",
+    "RANDOM_STATE = 42\n",
+    "np.random.seed(RANDOM_STATE)\n",
+    "\n",
+    "# Display settings\n",
+    "pd.set_option('display.max_columns', None)\n",
+    "pd.set_option('display.max_rows', 100)\n",
+    "\n",
+    "print(\"Libraries imported successfully!\")\n",
+    "print(f\"XGBoost version: {xgb.__version__}\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "54ed0810",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-16T18:38:12.089403Z",
+     "iopub.status.busy": "2025-11-16T18:38:12.088667Z",
+     "iopub.status.idle": "2025-11-16T18:38:12.127140Z",
+     "shell.execute_reply": "2025-11-16T18:38:12.126435Z"
+    },
+    "papermill": {
+     "duration": 0.045375,
+     "end_time": "2025-11-16T18:38:12.128286",
+     "exception": false,
+     "start_time": "2025-11-16T18:38:12.082911",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Memory management functions defined!\n",
+      "RAM Usage: 0.27 GB\n",
+      "GPU Memory: 0.00 GB / 15.00 GB\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Memory management utility functions\n",
+    "def clear_memory():\n",
+    "    \"\"\"Clear CPU and GPU memory\"\"\"\n",
+    "    gc.collect()\n",
+    "    \n",
+    "    # Clear GPU memory if available\n",
+    "    try:\n",
+    "        import torch\n",
+    "        if torch.cuda.is_available():\n",
+    "            torch.cuda.empty_cache()\n",
+    "            print(\"✓ Cleared PyTorch GPU cache\")\n",
+    "    except ImportError:\n",
+    "        pass\n",
+    "    \n",
+    "    try:\n",
+    "        import cupy as cp\n",
+    "        cp.get_default_memory_pool().free_all_blocks()\n",
+    "        print(\"✓ Cleared CuPy memory pool\")\n",
+    "    except ImportError:\n",
+    "        pass\n",
+    "    \n",
+    "    print(f\"✓ Garbage collection completed\")\n",
+    "\n",
+    "def get_memory_usage():\n",
+    "    \"\"\"Print current memory usage\"\"\"\n",
+    "    import psutil\n",
+    "    process = psutil.Process()\n",
+    "    mem_info = process.memory_info()\n",
+    "    print(f\"RAM Usage: {mem_info.rss / 1024**3:.2f} GB\")\n",
+    "    \n",
+    "    try:\n",
+    "        result = !nvidia-smi --query-gpu=memory.used,memory.total --format=csv,noheader,nounits\n",
+    "        if result:\n",
+    "            used, total = map(int, result[0].split(','))\n",
+    "            print(f\"GPU Memory: {used/1024:.2f} GB / {total/1024:.2f} GB\")\n",
+    "    except:\n",
+    "        pass\n",
+    "\n",
+    "print(\"Memory management functions defined!\")\n",
+    "get_memory_usage()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "181688d3",
+   "metadata": {
+    "papermill": {
+     "duration": 0.005208,
+     "end_time": "2025-11-16T18:38:12.138821",
+     "exception": false,
+     "start_time": "2025-11-16T18:38:12.133613",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "## 2. Load Data"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "544a9b32",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-16T18:38:12.149969Z",
+     "iopub.status.busy": "2025-11-16T18:38:12.149693Z",
+     "iopub.status.idle": "2025-11-16T18:38:12.311726Z",
+     "shell.execute_reply": "2025-11-16T18:38:12.311066Z"
+    },
+    "papermill": {
+     "duration": 0.169208,
+     "end_time": "2025-11-16T18:38:12.312978",
+     "exception": false,
+     "start_time": "2025-11-16T18:38:12.143770",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Train shape: (14036, 26)\n",
+      "Test shape: (2685, 24)\n",
+      "\n",
+      "Train columns: ['id', 'PROJECTNUMBER', 'MW', 'PROJECT_CITY', 'STATE', 'PROJECT_COUNTRY', 'CORE_MARKET', 'PROJECT_TYPE', 'SIZE_BUILDINGSIZE', 'NUMFLOORS', 'NUMROOMS', 'NUMBEDS', 'invoiceId', 'invoiceDate', 'invoiceTotal', 'ItemDescription', 'MasterItemNo', 'QtyShipped', 'UOM', 'ExtendedQuantity', 'PriceUOM', 'UnitPrice', 'ExtendedPrice', 'CONSTRUCTION_START_DATE', 'SUBSTANTIAL_COMPLETION_DATE', 'REVISED_ESTIMATE']\n",
+      "\n",
+      "First few rows:\n"
+     ]
+    },
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>id</th>\n",
+       "      <th>PROJECTNUMBER</th>\n",
+       "      <th>MW</th>\n",
+       "      <th>PROJECT_CITY</th>\n",
+       "      <th>STATE</th>\n",
+       "      <th>PROJECT_COUNTRY</th>\n",
+       "      <th>CORE_MARKET</th>\n",
+       "      <th>PROJECT_TYPE</th>\n",
+       "      <th>SIZE_BUILDINGSIZE</th>\n",
+       "      <th>NUMFLOORS</th>\n",
+       "      <th>NUMROOMS</th>\n",
+       "      <th>NUMBEDS</th>\n",
+       "      <th>invoiceId</th>\n",
+       "      <th>invoiceDate</th>\n",
+       "      <th>invoiceTotal</th>\n",
+       "      <th>ItemDescription</th>\n",
+       "      <th>MasterItemNo</th>\n",
+       "      <th>QtyShipped</th>\n",
+       "      <th>UOM</th>\n",
+       "      <th>ExtendedQuantity</th>\n",
+       "      <th>PriceUOM</th>\n",
+       "      <th>UnitPrice</th>\n",
+       "      <th>ExtendedPrice</th>\n",
+       "      <th>CONSTRUCTION_START_DATE</th>\n",
+       "      <th>SUBSTANTIAL_COMPLETION_DATE</th>\n",
+       "      <th>REVISED_ESTIMATE</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>3478</td>\n",
+       "      <td>A0-0070</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>Mumbai</td>\n",
+       "      <td>Maharashtra</td>\n",
+       "      <td>India</td>\n",
+       "      <td>Enterprise</td>\n",
+       "      <td>Workspace</td>\n",
+       "      <td>9000.0</td>\n",
+       "      <td>0.0</td>\n",
+       "      <td>0.0</td>\n",
+       "      <td>0.0</td>\n",
+       "      <td>B0-0454</td>\n",
+       "      <td>3/28/2023</td>\n",
+       "      <td>159940.910</td>\n",
+       "      <td>GoldBond Multi-Use Mud 5 Gallon\\nCan Red</td>\n",
+       "      <td>58211</td>\n",
+       "      <td>2</td>\n",
+       "      <td>can</td>\n",
+       "      <td>2</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>1983.125</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>3/22/2023 0:00</td>\n",
+       "      <td>5/25/2023 12:00</td>\n",
+       "      <td>2.409524e+07</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>8006</td>\n",
+       "      <td>A0-0208</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>Delhi</td>\n",
+       "      <td>Delhi</td>\n",
+       "      <td>India</td>\n",
+       "      <td>Wellness</td>\n",
+       "      <td>Health Center</td>\n",
+       "      <td>31200.0</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>B0-1821</td>\n",
+       "      <td>1/12/2023</td>\n",
+       "      <td>589473.260</td>\n",
+       "      <td>1-5/8\" x 10' Track 1-1/4\" Leg 20ga EQ</td>\n",
+       "      <td>53691</td>\n",
+       "      <td>15</td>\n",
+       "      <td>PC</td>\n",
+       "      <td>0.15</td>\n",
+       "      <td>ML</td>\n",
+       "      <td>53273.000</td>\n",
+       "      <td>7990.950</td>\n",
+       "      <td>11/1/2022 0:00</td>\n",
+       "      <td>7/3/2023 12:00</td>\n",
+       "      <td>9.511661e+08</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>5748</td>\n",
+       "      <td>A0-0004</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>Bengaluru</td>\n",
+       "      <td>Karnataka</td>\n",
+       "      <td>India</td>\n",
+       "      <td>Enterprise</td>\n",
+       "      <td>Workspace</td>\n",
+       "      <td>2800000.0</td>\n",
+       "      <td>0.0</td>\n",
+       "      <td>0.0</td>\n",
+       "      <td>0.0</td>\n",
+       "      <td>B0-1246</td>\n",
+       "      <td>2/2/2024</td>\n",
+       "      <td>544422.505</td>\n",
+       "      <td>Westpac Fast Set 20 Lite 20# Bag</td>\n",
+       "      <td>63311</td>\n",
+       "      <td>5</td>\n",
+       "      <td>BG</td>\n",
+       "      <td>5</td>\n",
+       "      <td>BG</td>\n",
+       "      <td>864.225</td>\n",
+       "      <td>4321.125</td>\n",
+       "      <td>2/3/2020 0:00</td>\n",
+       "      <td>10/31/2025 0:00</td>\n",
+       "      <td>3.492557e+10</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>7898</td>\n",
+       "      <td>A0-0166</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>Chennai</td>\n",
+       "      <td>Tamil Nadu</td>\n",
+       "      <td>India</td>\n",
+       "      <td>Tertiary Learning</td>\n",
+       "      <td>Learning Hub</td>\n",
+       "      <td>184000.0</td>\n",
+       "      <td>0.0</td>\n",
+       "      <td>0.0</td>\n",
+       "      <td>0.0</td>\n",
+       "      <td>B0-1800</td>\n",
+       "      <td>1/4/2023</td>\n",
+       "      <td>224771.980</td>\n",
+       "      <td>3-5/8\" ProX Header Clip 16ga (54mil)</td>\n",
+       "      <td>61506</td>\n",
+       "      <td>12</td>\n",
+       "      <td>EA</td>\n",
+       "      <td>12</td>\n",
+       "      <td>EA</td>\n",
+       "      <td>125.250</td>\n",
+       "      <td>1503.000</td>\n",
+       "      <td>11/19/2019 0:00</td>\n",
+       "      <td>1/24/2025 12:00</td>\n",
+       "      <td>1.553978e+10</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>11030</td>\n",
+       "      <td>A0-0242</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>Hyderabad</td>\n",
+       "      <td>Telangana</td>\n",
+       "      <td>India</td>\n",
+       "      <td>Wellness</td>\n",
+       "      <td>Ambulatory Care</td>\n",
+       "      <td>25000.0</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>B0-2850</td>\n",
+       "      <td>9/7/2023</td>\n",
+       "      <td>59264.125</td>\n",
+       "      <td>6\" x 16' Stud 1-5/8\" Flange 18ga</td>\n",
+       "      <td>50921</td>\n",
+       "      <td>8</td>\n",
+       "      <td>PC</td>\n",
+       "      <td>0.128</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>NaN</td>\n",
+       "      <td>23780.800</td>\n",
+       "      <td>12/3/2021 0:00</td>\n",
+       "      <td>3/2/2023 12:00</td>\n",
+       "      <td>6.867939e+08</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "      id PROJECTNUMBER  MW PROJECT_CITY        STATE PROJECT_COUNTRY  \\\n",
+       "0   3478       A0-0070 NaN       Mumbai  Maharashtra           India   \n",
+       "1   8006       A0-0208 NaN        Delhi        Delhi           India   \n",
+       "2   5748       A0-0004 NaN    Bengaluru    Karnataka           India   \n",
+       "3   7898       A0-0166 NaN      Chennai   Tamil Nadu           India   \n",
+       "4  11030       A0-0242 NaN    Hyderabad    Telangana           India   \n",
+       "\n",
+       "         CORE_MARKET     PROJECT_TYPE  SIZE_BUILDINGSIZE  NUMFLOORS  NUMROOMS  \\\n",
+       "0         Enterprise        Workspace             9000.0        0.0       0.0   \n",
+       "1           Wellness    Health Center            31200.0        NaN       NaN   \n",
+       "2         Enterprise        Workspace          2800000.0        0.0       0.0   \n",
+       "3  Tertiary Learning     Learning Hub           184000.0        0.0       0.0   \n",
+       "4           Wellness  Ambulatory Care            25000.0        NaN       NaN   \n",
+       "\n",
+       "   NUMBEDS invoiceId invoiceDate  invoiceTotal  \\\n",
+       "0      0.0   B0-0454   3/28/2023    159940.910   \n",
+       "1      NaN   B0-1821   1/12/2023    589473.260   \n",
+       "2      0.0   B0-1246    2/2/2024    544422.505   \n",
+       "3      0.0   B0-1800    1/4/2023    224771.980   \n",
+       "4      NaN   B0-2850    9/7/2023     59264.125   \n",
+       "\n",
+       "                            ItemDescription MasterItemNo QtyShipped  UOM  \\\n",
+       "0  GoldBond Multi-Use Mud 5 Gallon\\nCan Red        58211          2  can   \n",
+       "1     1-5/8\" x 10' Track 1-1/4\" Leg 20ga EQ        53691         15   PC   \n",
+       "2          Westpac Fast Set 20 Lite 20# Bag        63311          5   BG   \n",
+       "3      3-5/8\" ProX Header Clip 16ga (54mil)        61506         12   EA   \n",
+       "4          6\" x 16' Stud 1-5/8\" Flange 18ga        50921          8   PC   \n",
+       "\n",
+       "  ExtendedQuantity PriceUOM  UnitPrice  ExtendedPrice CONSTRUCTION_START_DATE  \\\n",
+       "0                2      NaN   1983.125            NaN          3/22/2023 0:00   \n",
+       "1             0.15       ML  53273.000       7990.950          11/1/2022 0:00   \n",
+       "2                5       BG    864.225       4321.125           2/3/2020 0:00   \n",
+       "3               12       EA    125.250       1503.000         11/19/2019 0:00   \n",
+       "4            0.128      NaN        NaN      23780.800          12/3/2021 0:00   \n",
+       "\n",
+       "  SUBSTANTIAL_COMPLETION_DATE  REVISED_ESTIMATE  \n",
+       "0             5/25/2023 12:00      2.409524e+07  \n",
+       "1              7/3/2023 12:00      9.511661e+08  \n",
+       "2             10/31/2025 0:00      3.492557e+10  \n",
+       "3             1/24/2025 12:00      1.553978e+10  \n",
+       "4              3/2/2023 12:00      6.867939e+08  "
+      ]
+     },
+     "execution_count": 4,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# Load training and test data\n",
+    "train_df = pd.read_csv('/kaggle/input/ctai-ctd-hackathon/train.csv')\n",
+    "test_df = pd.read_csv('/kaggle/input/ctai-ctd-hackathon/test.csv')\n",
+    "\n",
+    "print(f\"Train shape: {train_df.shape}\")\n",
+    "print(f\"Test shape: {test_df.shape}\")\n",
+    "print(f\"\\nTrain columns: {train_df.columns.tolist()}\")\n",
+    "print(f\"\\nFirst few rows:\")\n",
+    "train_df.head()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "3dc0d56d",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-16T18:38:12.325225Z",
+     "iopub.status.busy": "2025-11-16T18:38:12.324731Z",
+     "iopub.status.idle": "2025-11-16T18:38:12.382208Z",
+     "shell.execute_reply": "2025-11-16T18:38:12.381485Z"
+    },
+    "papermill": {
+     "duration": 0.064843,
+     "end_time": "2025-11-16T18:38:12.383433",
+     "exception": false,
+     "start_time": "2025-11-16T18:38:12.318590",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Converting data types...\n",
+      "  Train - id: float32\n",
+      "  Train - MW: float32\n",
+      "  Train - SIZE_BUILDINGSIZE: float32\n",
+      "  Train - NUMFLOORS: float32\n",
+      "  Train - NUMROOMS: float32\n",
+      "  Train - NUMBEDS: float32\n",
+      "  Train - invoiceTotal: float32\n",
+      "  Train - ExtendedQuantity: float32\n",
+      "  Train - UnitPrice: float32\n",
+      "  Train - ExtendedPrice: float32\n",
+      "  Train - REVISED_ESTIMATE: float32\n",
+      "  Train - QtyShipped: float32\n",
+      "\n",
+      "Data types converted!\n",
+      "RAM Usage: 0.29 GB\n",
+      "GPU Memory: 0.00 GB / 15.00 GB\n"
+     ]
+    }
+   ],
+   "source": [
+    "# CRITICAL: Convert ALL numeric columns to proper types immediately after loading\n",
+    "print(\"Converting data types...\")\n",
+    "\n",
+    "# All columns that should be numeric - use float32 to save memory!\n",
+    "all_numeric_cols = ['id', 'MW', 'SIZE_BUILDINGSIZE', 'NUMFLOORS', 'NUMROOMS', 'NUMBEDS',\n",
+    "                    'invoiceTotal', 'ExtendedQuantity', 'UnitPrice', 'ExtendedPrice', \n",
+    "                    'REVISED_ESTIMATE', 'QtyShipped']\n",
+    "\n",
+    "for col in all_numeric_cols:\n",
+    "    if col in train_df.columns:\n",
+    "        train_df[col] = pd.to_numeric(train_df[col], errors='coerce').astype('float32')\n",
+    "        print(f\"  Train - {col}: {train_df[col].dtype}\")\n",
+    "    if col in test_df.columns:\n",
+    "        test_df[col] = pd.to_numeric(test_df[col], errors='coerce').astype('float32')\n",
+    "\n",
+    "print(\"\\nData types converted!\")\n",
+    "get_memory_usage()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "5610a4c5",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-16T18:38:12.396326Z",
+     "iopub.status.busy": "2025-11-16T18:38:12.396021Z",
+     "iopub.status.idle": "2025-11-16T18:38:12.440349Z",
+     "shell.execute_reply": "2025-11-16T18:38:12.439358Z"
+    },
+    "papermill": {
+     "duration": 0.051899,
+     "end_time": "2025-11-16T18:38:12.441526",
+     "exception": false,
+     "start_time": "2025-11-16T18:38:12.389627",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      "=== Data Info ===\n",
+      "<class 'pandas.core.frame.DataFrame'>\n",
+      "RangeIndex: 14036 entries, 0 to 14035\n",
+      "Data columns (total 26 columns):\n",
+      " #   Column                       Non-Null Count  Dtype  \n",
+      "---  ------                       --------------  -----  \n",
+      " 0   id                           14036 non-null  float32\n",
+      " 1   PROJECTNUMBER                14036 non-null  object \n",
+      " 2   MW                           3300 non-null   float32\n",
+      " 3   PROJECT_CITY                 14036 non-null  object \n",
+      " 4   STATE                        14036 non-null  object \n",
+      " 5   PROJECT_COUNTRY              14036 non-null  object \n",
+      " 6   CORE_MARKET                  14036 non-null  object \n",
+      " 7   PROJECT_TYPE                 14034 non-null  object \n",
+      " 8   SIZE_BUILDINGSIZE            14006 non-null  float32\n",
+      " 9   NUMFLOORS                    9587 non-null   float32\n",
+      " 10  NUMROOMS                     6744 non-null   float32\n",
+      " 11  NUMBEDS                      5909 non-null   float32\n",
+      " 12  invoiceId                    14036 non-null  object \n",
+      " 13  invoiceDate                  14036 non-null  object \n",
+      " 14  invoiceTotal                 13771 non-null  float32\n",
+      " 15  ItemDescription              14036 non-null  object \n",
+      " 16  MasterItemNo                 14036 non-null  object \n",
+      " 17  QtyShipped                   13947 non-null  float32\n",
+      " 18  UOM                          12389 non-null  object \n",
+      " 19  ExtendedQuantity             12146 non-null  float32\n",
+      " 20  PriceUOM                     10079 non-null  object \n",
+      " 21  UnitPrice                    14023 non-null  float32\n",
+      " 22  ExtendedPrice                11514 non-null  float32\n",
+      " 23  CONSTRUCTION_START_DATE      14036 non-null  object \n",
+      " 24  SUBSTANTIAL_COMPLETION_DATE  14036 non-null  object \n",
+      " 25  REVISED_ESTIMATE             14036 non-null  float32\n",
+      "dtypes: float32(12), object(14)\n",
+      "memory usage: 2.1+ MB\n",
+      "\n",
+      "=== Missing Values ===\n",
+      "id                                 0\n",
+      "PROJECTNUMBER                      0\n",
+      "MW                             10736\n",
+      "PROJECT_CITY                       0\n",
+      "STATE                              0\n",
+      "PROJECT_COUNTRY                    0\n",
+      "CORE_MARKET                        0\n",
+      "PROJECT_TYPE                       2\n",
+      "SIZE_BUILDINGSIZE                 30\n",
+      "NUMFLOORS                       4449\n",
+      "NUMROOMS                        7292\n",
+      "NUMBEDS                         8127\n",
+      "invoiceId                          0\n",
+      "invoiceDate                        0\n",
+      "invoiceTotal                     265\n",
+      "ItemDescription                    0\n",
+      "MasterItemNo                       0\n",
+      "QtyShipped                        89\n",
+      "UOM                             1647\n",
+      "ExtendedQuantity                1890\n",
+      "PriceUOM                        3957\n",
+      "UnitPrice                         13\n",
+      "ExtendedPrice                   2522\n",
+      "CONSTRUCTION_START_DATE            0\n",
+      "SUBSTANTIAL_COMPLETION_DATE        0\n",
+      "REVISED_ESTIMATE                   0\n",
+      "dtype: int64\n",
+      "\n",
+      "=== Target Variables ===\n",
+      "Unique MasterItemNo: 2572\n",
+      "QtyShipped stats:\n",
+      "count    13947.000000\n",
+      "mean       254.537170\n",
+      "std       1474.343018\n",
+      "min       -500.000000\n",
+      "25%          4.000000\n",
+      "50%         20.000000\n",
+      "75%         82.000000\n",
+      "max      55092.000000\n",
+      "Name: QtyShipped, dtype: float64\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Check data types and missing values\n",
+    "print(\"\\n=== Data Info ===\")\n",
+    "train_df.info()\n",
+    "print(\"\\n=== Missing Values ===\")\n",
+    "print(train_df.isnull().sum())\n",
+    "print(\"\\n=== Target Variables ===\")\n",
+    "if 'MasterItemNo' in train_df.columns:\n",
+    "    print(f\"Unique MasterItemNo: {train_df['MasterItemNo'].nunique()}\")\n",
+    "if 'QtyShipped' in train_df.columns:\n",
+    "    print(f\"QtyShipped stats:\\n{train_df['QtyShipped'].describe()}\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "e6e96c37",
+   "metadata": {
+    "papermill": {
+     "duration": 0.005517,
+     "end_time": "2025-11-16T18:38:12.452731",
+     "exception": false,
+     "start_time": "2025-11-16T18:38:12.447214",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "## 3. Feature Engineering"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "id": "fc641def",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-16T18:38:12.464703Z",
+     "iopub.status.busy": "2025-11-16T18:38:12.464431Z",
+     "iopub.status.idle": "2025-11-16T18:38:12.481347Z",
+     "shell.execute_reply": "2025-11-16T18:38:12.480752Z"
+    },
+    "papermill": {
+     "duration": 0.024225,
+     "end_time": "2025-11-16T18:38:12.482360",
+     "exception": false,
+     "start_time": "2025-11-16T18:38:12.458135",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Feature engineering function defined!\n"
+     ]
+    }
+   ],
+   "source": [
+    "def parse_date(date_str):\n",
+    "    \"\"\"Parse date strings with multiple formats\"\"\"\n",
+    "    if pd.isna(date_str) or date_str == '':\n",
+    "        return None\n",
+    "    \n",
+    "    formats = ['%m/%d/%Y %H:%M', '%m/%d/%Y %H:%S', '%d/%m/%Y %H:%M', \n",
+    "               '%Y-%m-%d', '%m/%d/%Y', '%d/%m/%Y']\n",
+    "    \n",
+    "    for fmt in formats:\n",
+    "        try:\n",
+    "            return pd.to_datetime(date_str, format=fmt)\n",
+    "        except:\n",
+    "            continue\n",
+    "    \n",
+    "    try:\n",
+    "        return pd.to_datetime(date_str)\n",
+    "    except:\n",
+    "        return None\n",
+    "\n",
+    "def feature_engineering(df, is_train=True):\n",
+    "    \"\"\"Create features from the supply chain data\"\"\"\n",
+    "    df = df.copy()\n",
+    "    \n",
+    "    # Ensure numeric columns are proper type (safety check)\n",
+    "    numeric_columns = ['MW', 'SIZE_BUILDINGSIZE', 'NUMFLOORS', 'NUMROOMS', 'NUMBEDS',\n",
+    "                      'invoiceTotal', 'ExtendedQuantity', 'UnitPrice', \n",
+    "                      'ExtendedPrice', 'REVISED_ESTIMATE']\n",
+    "    \n",
+    "    for col in numeric_columns:\n",
+    "        if col in df.columns:\n",
+    "            df[col] = pd.to_numeric(df[col], errors='coerce').astype('float32')\n",
+    "    \n",
+    "    # Parse dates\n",
+    "    date_columns = ['invoiceDate', 'CONSTRUCTION_START_DATE', 'SUBSTANTIAL_COMPLETION_DATE']\n",
+    "    for col in date_columns:\n",
+    "        if col in df.columns:\n",
+    "            df[col] = df[col].apply(parse_date)\n",
+    "    \n",
+    "    # Invoice date features\n",
+    "    if 'invoiceDate' in df.columns:\n",
+    "        df['invoice_year'] = df['invoiceDate'].dt.year.astype('float32')\n",
+    "        df['invoice_month'] = df['invoiceDate'].dt.month.astype('float32')\n",
+    "        df['invoice_quarter'] = df['invoiceDate'].dt.quarter.astype('float32')\n",
+    "        df['invoice_day_of_week'] = df['invoiceDate'].dt.dayofweek.astype('float32')\n",
+    "        df['invoice_day_of_year'] = df['invoiceDate'].dt.dayofyear.astype('float32')\n",
+    "    \n",
+    "    # Construction timeline features\n",
+    "    if 'CONSTRUCTION_START_DATE' in df.columns and 'SUBSTANTIAL_COMPLETION_DATE' in df.columns:\n",
+    "        df['construction_duration'] = (df['SUBSTANTIAL_COMPLETION_DATE'] - \n",
+    "                                       df['CONSTRUCTION_START_DATE']).dt.days.astype('float32')\n",
+    "        df['construction_duration'] = df['construction_duration'].fillna(df['construction_duration'].median())\n",
+    "    \n",
+    "    if 'invoiceDate' in df.columns and 'CONSTRUCTION_START_DATE' in df.columns:\n",
+    "        df['days_since_construction_start'] = (df['invoiceDate'] - \n",
+    "                                               df['CONSTRUCTION_START_DATE']).dt.days.astype('float32')\n",
+    "        df['days_since_construction_start'] = df['days_since_construction_start'].fillna(0)\n",
+    "    \n",
+    "    if 'invoiceDate' in df.columns and 'SUBSTANTIAL_COMPLETION_DATE' in df.columns:\n",
+    "        df['days_to_completion'] = (df['SUBSTANTIAL_COMPLETION_DATE'] - \n",
+    "                                    df['invoiceDate']).dt.days.astype('float32')\n",
+    "        df['days_to_completion'] = df['days_to_completion'].fillna(df['days_to_completion'].median())\n",
+    "    \n",
+    "    # Financial features (use float32)\n",
+    "    if 'invoiceTotal' in df.columns:\n",
+    "        df['log_invoice_total'] = np.log1p(df['invoiceTotal'].fillna(0)).astype('float32')\n",
+    "    \n",
+    "    if 'UnitPrice' in df.columns:\n",
+    "        df['log_unit_price'] = np.log1p(df['UnitPrice'].fillna(0)).astype('float32')\n",
+    "    \n",
+    "    if 'ExtendedPrice' in df.columns:\n",
+    "        df['log_extended_price'] = np.log1p(df['ExtendedPrice'].fillna(0)).astype('float32')\n",
+    "    \n",
+    "    if 'invoiceTotal' in df.columns and 'ExtendedPrice' in df.columns:\n",
+    "        df['price_to_invoice_ratio'] = (df['ExtendedPrice'].fillna(0) / (df['invoiceTotal'].fillna(0) + 1)).astype('float32')\n",
+    "        df['price_to_invoice_ratio'] = df['price_to_invoice_ratio'].fillna(0)\n",
+    "    \n",
+    "    if 'REVISED_ESTIMATE' in df.columns:\n",
+    "        df['log_revised_estimate'] = np.log1p(df['REVISED_ESTIMATE'].fillna(0)).astype('float32')\n",
+    "    \n",
+    "    # Quantity features\n",
+    "    if 'ExtendedQuantity' in df.columns:\n",
+    "        df['log_extended_quantity'] = np.log1p(df['ExtendedQuantity'].fillna(0)).astype('float32')\n",
+    "    \n",
+    "    # Building features\n",
+    "    if 'SIZE_BUILDINGSIZE' in df.columns:\n",
+    "        df['log_building_size'] = np.log1p(df['SIZE_BUILDINGSIZE'].fillna(0)).astype('float32')\n",
+    "    \n",
+    "    if 'NUMFLOORS' in df.columns:\n",
+    "        df['NUMFLOORS'] = df['NUMFLOORS'].fillna(0)\n",
+    "        df['has_floors'] = (df['NUMFLOORS'] > 0).astype('int8')\n",
+    "    \n",
+    "    if 'NUMROOMS' in df.columns:\n",
+    "        df['NUMROOMS'] = df['NUMROOMS'].fillna(0)\n",
+    "        df['has_rooms'] = (df['NUMROOMS'] > 0).astype('int8')\n",
+    "    \n",
+    "    if 'NUMBEDS' in df.columns:\n",
+    "        df['NUMBEDS'] = df['NUMBEDS'].fillna(0)\n",
+    "        df['has_beds'] = (df['NUMBEDS'] > 0).astype('int8')\n",
+    "    \n",
+    "    # Text-based features from ItemDescription\n",
+    "    if 'ItemDescription' in df.columns:\n",
+    "        df['item_desc_length'] = df['ItemDescription'].fillna('').astype(str).str.len().astype('int16')\n",
+    "        df['item_word_count'] = df['ItemDescription'].fillna('').astype(str).str.split().str.len().astype('int16')\n",
+    "        df['item_has_number'] = df['ItemDescription'].fillna('').astype(str).str.contains(r'\\d').astype('int8')\n",
+    "        df['item_has_inch'] = df['ItemDescription'].fillna('').astype(str).str.contains('\"').astype('int8')\n",
+    "        df['item_has_dimension'] = df['ItemDescription'].fillna('').astype(str).str.contains(r'\\d+[\"x]').astype('int8')\n",
+    "    \n",
+    "    # Categorical features - frequency encoding\n",
+    "    categorical_cols = ['PROJECT_CITY', 'STATE', 'PROJECT_COUNTRY', 'CORE_MARKET', \n",
+    "                       'PROJECT_TYPE', 'UOM', 'PriceUOM']\n",
+    "    \n",
+    "    for col in categorical_cols:\n",
+    "        if col in df.columns:\n",
+    "            freq = df[col].value_counts(normalize=True).to_dict()\n",
+    "            df[f'{col}_freq'] = df[col].map(freq).fillna(0).astype('float32')\n",
+    "    \n",
+    "    # Aggregate features by project\n",
+    "    if 'PROJECTNUMBER' in df.columns:\n",
+    "        agg_dict = {}\n",
+    "        if 'id' in df.columns:\n",
+    "            agg_dict['id'] = 'count'\n",
+    "        if 'invoiceTotal' in df.columns:\n",
+    "            agg_dict['invoiceTotal'] = ['mean', 'sum', 'std']\n",
+    "        if 'ExtendedPrice' in df.columns:\n",
+    "            agg_dict['ExtendedPrice'] = ['mean', 'sum', 'std']\n",
+    "        if 'ExtendedQuantity' in df.columns:\n",
+    "            agg_dict['ExtendedQuantity'] = ['mean', 'sum', 'std']\n",
+    "        \n",
+    "        if agg_dict:\n",
+    "            project_agg = df.groupby('PROJECTNUMBER').agg(agg_dict).reset_index()\n",
+    "            project_agg.columns = ['PROJECTNUMBER'] + [f'project_{\"_\".join(col).strip()}' for col in project_agg.columns[1:]]\n",
+    "            \n",
+    "            # Convert to float32\n",
+    "            for col in project_agg.columns[1:]:\n",
+    "                project_agg[col] = project_agg[col].astype('float32')\n",
+    "            \n",
+    "            df = df.merge(project_agg, on='PROJECTNUMBER', how='left')\n",
+    "    \n",
+    "    return df\n",
+    "\n",
+    "print(\"Feature engineering function defined!\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "1d4e6b83",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-16T18:38:12.494928Z",
+     "iopub.status.busy": "2025-11-16T18:38:12.494473Z",
+     "iopub.status.idle": "2025-11-16T18:38:23.211828Z",
+     "shell.execute_reply": "2025-11-16T18:38:23.211006Z"
+    },
+    "papermill": {
+     "duration": 10.724779,
+     "end_time": "2025-11-16T18:38:23.213126",
+     "exception": false,
+     "start_time": "2025-11-16T18:38:12.488347",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Applying feature engineering...\n",
+      "Train shape after FE: (14036, 66)\n",
+      "Test shape after FE: (2685, 64)\n",
+      "\n",
+      "New features created: 40\n",
+      "✓ Cleared PyTorch GPU cache\n",
+      "✓ Cleared CuPy memory pool\n",
+      "✓ Garbage collection completed\n",
+      "RAM Usage: 0.65 GB\n",
+      "GPU Memory: 0.00 GB / 15.00 GB\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Apply feature engineering\n",
+    "print(\"Applying feature engineering...\")\n",
+    "train_df_fe = feature_engineering(train_df, is_train=True)\n",
+    "test_df_fe = feature_engineering(test_df, is_train=False)\n",
+    "\n",
+    "print(f\"Train shape after FE: {train_df_fe.shape}\")\n",
+    "print(f\"Test shape after FE: {test_df_fe.shape}\")\n",
+    "print(f\"\\nNew features created: {len(set(train_df_fe.columns) - set(train_df.columns))}\")\n",
+    "\n",
+    "# Clear original dataframes to save memory\n",
+    "del train_df, test_df\n",
+    "clear_memory()\n",
+    "get_memory_usage()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "aa350a91",
+   "metadata": {
+    "papermill": {
+     "duration": 0.006037,
+     "end_time": "2025-11-16T18:38:23.225540",
+     "exception": false,
+     "start_time": "2025-11-16T18:38:23.219503",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "## 4. Prepare Features for Modeling"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "id": "363ddce2",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-16T18:38:23.238862Z",
+     "iopub.status.busy": "2025-11-16T18:38:23.238126Z",
+     "iopub.status.idle": "2025-11-16T18:38:24.201031Z",
+     "shell.execute_reply": "2025-11-16T18:38:24.200178Z"
+    },
+    "papermill": {
+     "duration": 0.97094,
+     "end_time": "2025-11-16T18:38:24.202567",
+     "exception": false,
+     "start_time": "2025-11-16T18:38:23.231627",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Total features: 56\n",
+      "\n",
+      "Feature columns sample: ['SIZE_BUILDINGSIZE', 'NUMFLOORS', 'NUMROOMS', 'NUMBEDS', 'invoiceTotal', 'ExtendedQuantity', 'UnitPrice', 'ExtendedPrice', 'REVISED_ESTIMATE', 'invoice_year', 'invoice_month', 'invoice_quarter', 'invoice_day_of_week', 'invoice_day_of_year', 'construction_duration', 'days_since_construction_start', 'days_to_completion', 'log_invoice_total', 'log_unit_price', 'log_extended_price']...\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Define feature columns (excluding target and ID columns)\n",
+    "exclude_cols = ['id', 'MasterItemNo', 'QtyShipped', 'invoiceDate', \n",
+    "                'CONSTRUCTION_START_DATE', 'SUBSTANTIAL_COMPLETION_DATE',\n",
+    "                'PROJECTNUMBER', 'invoiceId', 'ItemDescription', 'MW']\n",
+    "\n",
+    "# Get numeric columns\n",
+    "numeric_cols = train_df_fe.select_dtypes(include=[np.number]).columns.tolist()\n",
+    "feature_cols = [col for col in numeric_cols if col not in exclude_cols]\n",
+    "\n",
+    "# Add label encoded categorical columns\n",
+    "label_encoders = {}\n",
+    "categorical_cols = ['PROJECT_CITY', 'STATE', 'PROJECT_COUNTRY', 'CORE_MARKET', \n",
+    "                   'PROJECT_TYPE', 'UOM', 'PriceUOM']\n",
+    "\n",
+    "for col in categorical_cols:\n",
+    "    if col in train_df_fe.columns:\n",
+    "        le = LabelEncoder()\n",
+    "        train_df_fe[f'{col}_encoded'] = le.fit_transform(train_df_fe[col].fillna('Unknown').astype(str)).astype('int16')\n",
+    "        \n",
+    "        # Handle unseen categories in test set\n",
+    "        test_vals = test_df_fe[col].fillna('Unknown').astype(str)\n",
+    "        test_df_fe[f'{col}_encoded'] = test_vals.apply(lambda x: le.transform([x])[0] if x in le.classes_ else -1).astype('int16')\n",
+    "        \n",
+    "        label_encoders[col] = le\n",
+    "        feature_cols.append(f'{col}_encoded')\n",
+    "\n",
+    "print(f\"Total features: {len(feature_cols)}\")\n",
+    "print(f\"\\nFeature columns sample: {feature_cols[:20]}...\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "id": "86177b23",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-16T18:38:24.217046Z",
+     "iopub.status.busy": "2025-11-16T18:38:24.216439Z",
+     "iopub.status.idle": "2025-11-16T18:38:24.410640Z",
+     "shell.execute_reply": "2025-11-16T18:38:24.409805Z"
+    },
+    "papermill": {
+     "duration": 0.201899,
+     "end_time": "2025-11-16T18:38:24.411851",
+     "exception": false,
+     "start_time": "2025-11-16T18:38:24.209952",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "✓ Cleared PyTorch GPU cache\n",
+      "✓ Cleared CuPy memory pool\n",
+      "✓ Garbage collection completed\n",
+      "X shape: (14036, 56), dtype: float32\n",
+      "y_class unique values: 2572\n",
+      "y_reg stats: min=-500.00, max=55092.00, mean=252.92\n",
+      "X_test shape: (2685, 56)\n",
+      "RAM Usage: 0.66 GB\n",
+      "GPU Memory: 0.00 GB / 15.00 GB\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Prepare training data - USE FLOAT32 to save GPU memory!\n",
+    "X = train_df_fe[feature_cols].fillna(0).replace([np.inf, -np.inf], 0).astype('float32')\n",
+    "y_class = train_df_fe['MasterItemNo'].astype(str)\n",
+    "y_reg = pd.to_numeric(train_df_fe['QtyShipped'], errors='coerce').fillna(0).astype('float32')\n",
+    "\n",
+    "# Prepare test data\n",
+    "X_test = test_df_fe[feature_cols].fillna(0).replace([np.inf, -np.inf], 0).astype('float32')\n",
+    "\n",
+    "# Store test IDs for submission\n",
+    "test_ids = test_df_fe['id'].copy()\n",
+    "\n",
+    "# Clear feature-engineered dataframes to save memory\n",
+    "del train_df_fe, test_df_fe\n",
+    "clear_memory()\n",
+    "\n",
+    "print(f\"X shape: {X.shape}, dtype: {X.values.dtype}\")\n",
+    "print(f\"y_class unique values: {len(np.unique(y_class))}\")\n",
+    "print(f\"y_reg stats: min={y_reg.min():.2f}, max={y_reg.max():.2f}, mean={y_reg.mean():.2f}\")\n",
+    "print(f\"X_test shape: {X_test.shape}\")\n",
+    "get_memory_usage()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "id": "b70d9f67",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-16T18:38:24.425396Z",
+     "iopub.status.busy": "2025-11-16T18:38:24.424733Z",
+     "iopub.status.idle": "2025-11-16T18:38:24.442069Z",
+     "shell.execute_reply": "2025-11-16T18:38:24.441169Z"
+    },
+    "papermill": {
+     "duration": 0.025198,
+     "end_time": "2025-11-16T18:38:24.443316",
+     "exception": false,
+     "start_time": "2025-11-16T18:38:24.418118",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Analyzing class distribution...\n",
+      "Total unique classes: 2572\n",
+      "Classes with only 1 sample: 1303\n",
+      "Classes with 2-5 samples: 847\n",
+      "\n",
+      "Classes with >= 2 samples: 1269\n",
+      "\n",
+      "Filtered data shape: (12733, 56)\n",
+      "Removed 1303 samples with rare classes\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Handle rare classes - filter out classes with too few samples for stratified split\n",
+    "print(\"Analyzing class distribution...\")\n",
+    "class_counts = y_class.value_counts()\n",
+    "print(f\"Total unique classes: {len(class_counts)}\")\n",
+    "print(f\"Classes with only 1 sample: {(class_counts == 1).sum()}\")\n",
+    "print(f\"Classes with 2-5 samples: {((class_counts > 1) & (class_counts <= 5)).sum()}\")\n",
+    "\n",
+    "# Keep only classes with at least 2 samples for stratified split\n",
+    "valid_classes = class_counts[class_counts >= 2].index.tolist()\n",
+    "print(f\"\\nClasses with >= 2 samples: {len(valid_classes)}\")\n",
+    "\n",
+    "# Filter data to keep only valid classes\n",
+    "mask = y_class.isin(valid_classes)\n",
+    "X_filtered = X[mask].reset_index(drop=True)\n",
+    "y_class_filtered = y_class[mask].reset_index(drop=True)\n",
+    "y_reg_filtered = y_reg[mask].reset_index(drop=True)\n",
+    "\n",
+    "print(f\"\\nFiltered data shape: {X_filtered.shape}\")\n",
+    "print(f\"Removed {len(X) - len(X_filtered)} samples with rare classes\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "id": "ab58b2a2",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-16T18:38:24.456835Z",
+     "iopub.status.busy": "2025-11-16T18:38:24.456499Z",
+     "iopub.status.idle": "2025-11-16T18:38:24.464006Z",
+     "shell.execute_reply": "2025-11-16T18:38:24.463052Z"
+    },
+    "papermill": {
+     "duration": 0.015526,
+     "end_time": "2025-11-16T18:38:24.465190",
+     "exception": false,
+     "start_time": "2025-11-16T18:38:24.449664",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Encoded classes: 1269\n",
+      "Class range: [0, 1268]\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Encode classification target AFTER filtering\n",
+    "le_target = LabelEncoder()\n",
+    "y_class_encoded = le_target.fit_transform(y_class_filtered).astype('int32')\n",
+    "\n",
+    "print(f\"Encoded classes: {len(le_target.classes_)}\")\n",
+    "print(f\"Class range: [{y_class_encoded.min()}, {y_class_encoded.max()}]\")"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "id": "2f48270c",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-16T18:38:24.479054Z",
+     "iopub.status.busy": "2025-11-16T18:38:24.478515Z",
+     "iopub.status.idle": "2025-11-16T18:38:24.666060Z",
+     "shell.execute_reply": "2025-11-16T18:38:24.665323Z"
+    },
+    "papermill": {
+     "duration": 0.195437,
+     "end_time": "2025-11-16T18:38:24.667242",
+     "exception": false,
+     "start_time": "2025-11-16T18:38:24.471805",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "✓ Used stratified split\n",
+      "✓ Cleared PyTorch GPU cache\n",
+      "✓ Cleared CuPy memory pool\n",
+      "✓ Garbage collection completed\n",
+      "Train set: (10186, 56)\n",
+      "Validation set: (2547, 56)\n",
+      "Train classes: 1269\n",
+      "Validation classes: 821\n",
+      "RAM Usage: 0.65 GB\n",
+      "GPU Memory: 0.00 GB / 15.00 GB\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Split data for validation using stratified split\n",
+    "try:\n",
+    "    X_train, X_val, y_class_train, y_class_val, y_reg_train, y_reg_val = train_test_split(\n",
+    "        X_filtered, y_class_encoded, y_reg_filtered, \n",
+    "        test_size=0.2, \n",
+    "        random_state=RANDOM_STATE,\n",
+    "        stratify=y_class_encoded\n",
+    "    )\n",
+    "    print(\"✓ Used stratified split\")\n",
+    "except ValueError as e:\n",
+    "    print(f\"Stratified split failed: {e}\")\n",
+    "    print(\"Using random split instead...\")\n",
+    "    X_train, X_val, y_class_train, y_class_val, y_reg_train, y_reg_val = train_test_split(\n",
+    "        X_filtered, y_class_encoded, y_reg_filtered, \n",
+    "        test_size=0.2, \n",
+    "        random_state=RANDOM_STATE\n",
+    "    )\n",
+    "\n",
+    "# Clear filtered data to save memory\n",
+    "del X_filtered, y_class_filtered, y_reg_filtered\n",
+    "clear_memory()\n",
+    "\n",
+    "print(f\"Train set: {X_train.shape}\")\n",
+    "print(f\"Validation set: {X_val.shape}\")\n",
+    "print(f\"Train classes: {len(np.unique(y_class_train))}\")\n",
+    "print(f\"Validation classes: {len(np.unique(y_class_val))}\")\n",
+    "get_memory_usage()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "0305a434",
+   "metadata": {
+    "papermill": {
+     "duration": 0.005959,
+     "end_time": "2025-11-16T18:38:24.679642",
+     "exception": false,
+     "start_time": "2025-11-16T18:38:24.673683",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "## 5. Classification Model (MasterItemNo)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "854e072c",
+   "metadata": {
+    "papermill": {
+     "duration": 0.006126,
+     "end_time": "2025-11-16T18:38:24.691939",
+     "exception": false,
+     "start_time": "2025-11-16T18:38:24.685813",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "### 5.1 Random Forest Classifier"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "id": "f3339f6e",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-16T18:38:24.705376Z",
+     "iopub.status.busy": "2025-11-16T18:38:24.704822Z",
+     "iopub.status.idle": "2025-11-16T18:38:48.543354Z",
+     "shell.execute_reply": "2025-11-16T18:38:48.542656Z"
+    },
+    "papermill": {
+     "duration": 23.846429,
+     "end_time": "2025-11-16T18:38:48.544534",
+     "exception": false,
+     "start_time": "2025-11-16T18:38:24.698105",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Training Random Forest Classifier...\n",
+      "Memory before training:\n",
+      "RAM Usage: 0.65 GB\n",
+      "GPU Memory: 0.00 GB / 15.00 GB\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "[Parallel(n_jobs=-1)]: Using backend ThreadingBackend with 4 concurrent workers.\n",
+      "[Parallel(n_jobs=-1)]: Done  42 tasks      | elapsed:    3.3s\n",
+      "[Parallel(n_jobs=-1)]: Done 192 tasks      | elapsed:   14.5s\n",
+      "[Parallel(n_jobs=-1)]: Done 200 out of 200 | elapsed:   15.1s finished\n",
+      "[Parallel(n_jobs=4)]: Using backend ThreadingBackend with 4 concurrent workers.\n",
+      "[Parallel(n_jobs=4)]: Done  42 tasks      | elapsed:    1.7s\n",
+      "[Parallel(n_jobs=4)]: Done 192 tasks      | elapsed:    6.7s\n",
+      "[Parallel(n_jobs=4)]: Done 200 out of 200 | elapsed:    7.0s finished\n",
+      "[Parallel(n_jobs=4)]: Using backend ThreadingBackend with 4 concurrent workers.\n",
+      "[Parallel(n_jobs=4)]: Done  42 tasks      | elapsed:    0.4s\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      "Random Forest Classifier Results:\n",
+      "Train Accuracy: 0.9305\n",
+      "Validation Accuracy: 0.7947\n",
+      "✓ Cleared PyTorch GPU cache\n",
+      "✓ Cleared CuPy memory pool\n",
+      "✓ Garbage collection completed\n",
+      "RAM Usage: 4.27 GB\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "[Parallel(n_jobs=4)]: Done 192 tasks      | elapsed:    1.4s\n",
+      "[Parallel(n_jobs=4)]: Done 200 out of 200 | elapsed:    1.4s finished\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "GPU Memory: 0.00 GB / 15.00 GB\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(\"Training Random Forest Classifier...\")\n",
+    "print(\"Memory before training:\")\n",
+    "get_memory_usage()\n",
+    "\n",
+    "rf_clf = RandomForestClassifier(\n",
+    "    n_estimators=200,  # Reduced from 200 to save memory\n",
+    "    max_depth=20,      # Reduced from 20\n",
+    "    min_samples_split=10,\n",
+    "    min_samples_leaf=3,\n",
+    "    max_features='sqrt',\n",
+    "    random_state=RANDOM_STATE,\n",
+    "    n_jobs=-1,\n",
+    "    verbose=1\n",
+    ")\n",
+    "\n",
+    "rf_clf.fit(X_train, y_class_train)\n",
+    "\n",
+    "# Predictions\n",
+    "rf_clf_pred_train = rf_clf.predict(X_train)\n",
+    "rf_clf_pred_val = rf_clf.predict(X_val)\n",
+    "\n",
+    "# Evaluation\n",
+    "rf_clf_acc_train = accuracy_score(y_class_train, rf_clf_pred_train)\n",
+    "rf_clf_acc_val = accuracy_score(y_class_val, rf_clf_pred_val)\n",
+    "\n",
+    "print(f\"\\nRandom Forest Classifier Results:\")\n",
+    "print(f\"Train Accuracy: {rf_clf_acc_train:.4f}\")\n",
+    "print(f\"Validation Accuracy: {rf_clf_acc_val:.4f}\")\n",
+    "\n",
+    "# Store results and clear model to save memory\n",
+    "rf_clf_results = {\n",
+    "    'train_acc': rf_clf_acc_train,\n",
+    "    'val_acc': rf_clf_acc_val\n",
+    "}\n",
+    "del rf_clf_pred_train, rf_clf_pred_val\n",
+    "clear_memory()\n",
+    "get_memory_usage()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "1d30c5e5",
+   "metadata": {
+    "papermill": {
+     "duration": 0.006885,
+     "end_time": "2025-11-16T18:38:48.558460",
+     "exception": false,
+     "start_time": "2025-11-16T18:38:48.551575",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "### 5.2 XGBoost Classifier"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "id": "5ae04d3d",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-16T18:38:48.572842Z",
+     "iopub.status.busy": "2025-11-16T18:38:48.572226Z",
+     "iopub.status.idle": "2025-11-16T18:42:23.942242Z",
+     "shell.execute_reply": "2025-11-16T18:42:23.941526Z"
+    },
+    "papermill": {
+     "duration": 215.378575,
+     "end_time": "2025-11-16T18:42:23.943486",
+     "exception": false,
+     "start_time": "2025-11-16T18:38:48.564911",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Training XGBoost Classifier...\n",
+      "Memory before training:\n",
+      "RAM Usage: 4.27 GB\n",
+      "GPU Memory: 0.00 GB / 15.00 GB\n",
+      "✓ All validation classes present in training set\n",
+      "[0]\tvalidation_0-mlogloss:6.89247\n",
+      "[50]\tvalidation_0-mlogloss:3.42954\n",
+      "[100]\tvalidation_0-mlogloss:2.77084\n",
+      "[150]\tvalidation_0-mlogloss:2.53515\n",
+      "[200]\tvalidation_0-mlogloss:2.42223\n",
+      "[250]\tvalidation_0-mlogloss:2.36698\n",
+      "[299]\tvalidation_0-mlogloss:2.34022\n",
+      "\n",
+      "XGBoost Classifier Results:\n",
+      "Train Accuracy: 0.7108\n",
+      "Validation Accuracy: 0.6616\n",
+      "✓ Cleared PyTorch GPU cache\n",
+      "✓ Cleared CuPy memory pool\n",
+      "✓ Garbage collection completed\n",
+      "RAM Usage: 6.85 GB\n",
+      "GPU Memory: 0.12 GB / 15.00 GB\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(\"Training XGBoost Classifier...\")\n",
+    "print(\"Memory before training:\")\n",
+    "get_memory_usage()\n",
+    "\n",
+    "# Check if all validation classes are in training set\n",
+    "train_classes = set(np.unique(y_class_train))\n",
+    "val_classes = set(np.unique(y_class_val))\n",
+    "missing_classes = val_classes - train_classes\n",
+    "\n",
+    "if missing_classes:\n",
+    "    print(f\"Warning: {len(missing_classes)} validation classes not in training set\")\n",
+    "    print(\"Filtering validation set to only include training classes...\")\n",
+    "    \n",
+    "    val_mask = np.isin(y_class_val, list(train_classes))\n",
+    "    X_val_xgb = X_val[val_mask]\n",
+    "    y_class_val_xgb = y_class_val[val_mask]\n",
+    "    print(f\"Filtered validation set: {X_val_xgb.shape}\")\n",
+    "else:\n",
+    "    X_val_xgb = X_val\n",
+    "    y_class_val_xgb = y_class_val\n",
+    "    print(\"✓ All validation classes present in training set\")\n",
+    "\n",
+    "xgb_clf = xgb.XGBClassifier(\n",
+    "    n_estimators=300,    # Reduced from 300\n",
+    "    max_depth=8,         # Reduced from 8\n",
+    "    learning_rate=0.05,   # Increased for faster convergence\n",
+    "    subsample=0.8,\n",
+    "    colsample_bytree=0.8,\n",
+    "    min_child_weight=5,\n",
+    "    gamma=0.1,\n",
+    "    tree_method='gpu_hist',\n",
+    "    predictor='gpu_predictor',\n",
+    "    random_state=RANDOM_STATE,\n",
+    "    n_jobs=-1,\n",
+    "    verbosity=1\n",
+    ")\n",
+    "\n",
+    "xgb_clf.fit(\n",
+    "    X_train, y_class_train,\n",
+    "    eval_set=[(X_val_xgb, y_class_val_xgb)],\n",
+    "    verbose=50\n",
+    ")\n",
+    "\n",
+    "# Predictions\n",
+    "xgb_clf_pred_train = xgb_clf.predict(X_train)\n",
+    "xgb_clf_pred_val = xgb_clf.predict(X_val)\n",
+    "\n",
+    "# Evaluation\n",
+    "xgb_clf_acc_train = accuracy_score(y_class_train, xgb_clf_pred_train)\n",
+    "xgb_clf_acc_val = accuracy_score(y_class_val, xgb_clf_pred_val)\n",
+    "\n",
+    "print(f\"\\nXGBoost Classifier Results:\")\n",
+    "print(f\"Train Accuracy: {xgb_clf_acc_train:.4f}\")\n",
+    "print(f\"Validation Accuracy: {xgb_clf_acc_val:.4f}\")\n",
+    "\n",
+    "# Store results and clear model\n",
+    "xgb_clf_results = {\n",
+    "    'train_acc': xgb_clf_acc_train,\n",
+    "    'val_acc': xgb_clf_acc_val\n",
+    "}\n",
+    "del xgb_clf_pred_train, xgb_clf_pred_val, xgb_clf, X_val_xgb, y_class_val_xgb\n",
+    "clear_memory()\n",
+    "get_memory_usage()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 16,
+   "id": "49a1c182",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-16T18:42:23.959487Z",
+     "iopub.status.busy": "2025-11-16T18:42:23.958941Z",
+     "iopub.status.idle": "2025-11-16T18:42:23.963632Z",
+     "shell.execute_reply": "2025-11-16T18:42:23.962997Z"
+    },
+    "papermill": {
+     "duration": 0.013553,
+     "end_time": "2025-11-16T18:42:23.964587",
+     "exception": false,
+     "start_time": "2025-11-16T18:42:23.951034",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      "=== Classification Model Comparison ===\n",
+      "Random Forest - Val Accuracy: 0.7947\n",
+      "XGBoost - Val Accuracy: 0.6616\n",
+      "\n",
+      "✓ Random Forest selected as best classifier\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Compare classifiers and choose the best\n",
+    "print(\"\\n=== Classification Model Comparison ===\")\n",
+    "print(f\"Random Forest - Val Accuracy: {rf_clf_results['val_acc']:.4f}\")\n",
+    "print(f\"XGBoost - Val Accuracy: {xgb_clf_results['val_acc']:.4f}\")\n",
+    "\n",
+    "if xgb_clf_results['val_acc'] > rf_clf_results['val_acc']:\n",
+    "    best_clf_type = 'xgboost'\n",
+    "    print(\"\\n✓ XGBoost selected as best classifier\")\n",
+    "else:\n",
+    "    best_clf_type = 'rf'\n",
+    "    print(\"\\n✓ Random Forest selected as best classifier\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "379a737b",
+   "metadata": {
+    "papermill": {
+     "duration": 0.006977,
+     "end_time": "2025-11-16T18:42:23.978842",
+     "exception": false,
+     "start_time": "2025-11-16T18:42:23.971865",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "## 6. Regression Model (QtyShipped)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "f49b6d32",
+   "metadata": {
+    "papermill": {
+     "duration": 0.006916,
+     "end_time": "2025-11-16T18:42:23.992824",
+     "exception": false,
+     "start_time": "2025-11-16T18:42:23.985908",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "### 6.1 Random Forest Regressor"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 17,
+   "id": "ad441442",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-16T18:42:24.008020Z",
+     "iopub.status.busy": "2025-11-16T18:42:24.007396Z",
+     "iopub.status.idle": "2025-11-16T18:42:25.886365Z",
+     "shell.execute_reply": "2025-11-16T18:42:25.885717Z"
+    },
+    "papermill": {
+     "duration": 1.887572,
+     "end_time": "2025-11-16T18:42:25.887408",
+     "exception": false,
+     "start_time": "2025-11-16T18:42:23.999836",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Training Random Forest Regressor...\n",
+      "Memory before training:\n",
+      "RAM Usage: 6.85 GB\n",
+      "GPU Memory: 0.12 GB / 15.00 GB\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "[Parallel(n_jobs=-1)]: Using backend ThreadingBackend with 4 concurrent workers.\n",
+      "[Parallel(n_jobs=-1)]: Done  42 tasks      | elapsed:    0.4s\n",
+      "[Parallel(n_jobs=-1)]: Done 192 tasks      | elapsed:    1.5s\n",
+      "[Parallel(n_jobs=-1)]: Done 200 out of 200 | elapsed:    1.6s finished\n",
+      "[Parallel(n_jobs=4)]: Using backend ThreadingBackend with 4 concurrent workers.\n",
+      "[Parallel(n_jobs=4)]: Done  42 tasks      | elapsed:    0.0s\n",
+      "[Parallel(n_jobs=4)]: Done 192 tasks      | elapsed:    0.0s\n",
+      "[Parallel(n_jobs=4)]: Done 200 out of 200 | elapsed:    0.0s finished\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      "Random Forest Regressor Results:\n",
+      "Validation MAE: 32.0043\n",
+      "Validation RMSE: 163.7985\n",
+      "Validation R²: 0.9810\n",
+      "✓ Cleared PyTorch GPU cache\n",
+      "✓ Cleared CuPy memory pool\n",
+      "✓ Garbage collection completed\n",
+      "RAM Usage: 6.87 GB\n",
+      "GPU Memory: 0.12 GB / 15.00 GB\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(\"Training Random Forest Regressor...\")\n",
+    "print(\"Memory before training:\")\n",
+    "get_memory_usage()\n",
+    "\n",
+    "rf_reg = RandomForestRegressor(\n",
+    "    n_estimators=200,   # Reduced from 200\n",
+    "    max_depth=30,       # Reduced from 25\n",
+    "    min_samples_split=10,\n",
+    "    min_samples_leaf=3,\n",
+    "    max_features='sqrt',\n",
+    "    random_state=RANDOM_STATE,\n",
+    "    n_jobs=-1,\n",
+    "    verbose=1\n",
+    ")\n",
+    "\n",
+    "rf_reg.fit(X_train, y_reg_train)\n",
+    "\n",
+    "# Predictions\n",
+    "rf_reg_pred_val = np.maximum(rf_reg.predict(X_val), 0)\n",
+    "\n",
+    "# Evaluation\n",
+    "rf_reg_mae_val = mean_absolute_error(y_reg_val, rf_reg_pred_val)\n",
+    "rf_reg_rmse_val = np.sqrt(mean_squared_error(y_reg_val, rf_reg_pred_val))\n",
+    "rf_reg_r2_val = r2_score(y_reg_val, rf_reg_pred_val)\n",
+    "\n",
+    "print(f\"\\nRandom Forest Regressor Results:\")\n",
+    "print(f\"Validation MAE: {rf_reg_mae_val:.4f}\")\n",
+    "print(f\"Validation RMSE: {rf_reg_rmse_val:.4f}\")\n",
+    "print(f\"Validation R²: {rf_reg_r2_val:.4f}\")\n",
+    "\n",
+    "# Store results\n",
+    "rf_reg_results = {\n",
+    "    'mae': rf_reg_mae_val,\n",
+    "    'rmse': rf_reg_rmse_val,\n",
+    "    'r2': rf_reg_r2_val\n",
+    "}\n",
+    "del rf_reg_pred_val\n",
+    "clear_memory()\n",
+    "get_memory_usage()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "069e7317",
+   "metadata": {
+    "papermill": {
+     "duration": 0.007322,
+     "end_time": "2025-11-16T18:42:25.902779",
+     "exception": false,
+     "start_time": "2025-11-16T18:42:25.895457",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "### 6.2 XGBoost Regressor"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 18,
+   "id": "95eb5073",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-16T18:42:25.918498Z",
+     "iopub.status.busy": "2025-11-16T18:42:25.918040Z",
+     "iopub.status.idle": "2025-11-16T18:42:27.842579Z",
+     "shell.execute_reply": "2025-11-16T18:42:27.841825Z"
+    },
+    "papermill": {
+     "duration": 1.933858,
+     "end_time": "2025-11-16T18:42:27.843858",
+     "exception": false,
+     "start_time": "2025-11-16T18:42:25.910000",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Training XGBoost Regressor...\n",
+      "Memory before training:\n",
+      "RAM Usage: 6.87 GB\n",
+      "GPU Memory: 0.12 GB / 15.00 GB\n",
+      "[0]\tvalidation_0-rmse:1130.40305\n",
+      "[50]\tvalidation_0-rmse:389.22553\n",
+      "[100]\tvalidation_0-rmse:382.23854\n",
+      "[150]\tvalidation_0-rmse:370.68461\n",
+      "[200]\tvalidation_0-rmse:357.40310\n",
+      "[250]\tvalidation_0-rmse:345.22472\n",
+      "[299]\tvalidation_0-rmse:347.63584\n",
+      "\n",
+      "XGBoost Regressor Results:\n",
+      "Validation MAE: 33.1134\n",
+      "Validation RMSE: 346.7971\n",
+      "Validation R²: 0.9150\n",
+      "✓ Cleared PyTorch GPU cache\n",
+      "✓ Cleared CuPy memory pool\n",
+      "✓ Garbage collection completed\n",
+      "RAM Usage: 6.37 GB\n",
+      "GPU Memory: 0.12 GB / 15.00 GB\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(\"Training XGBoost Regressor...\")\n",
+    "print(\"Memory before training:\")\n",
+    "get_memory_usage()\n",
+    "\n",
+    "xgb_reg = xgb.XGBRegressor(\n",
+    "    n_estimators=300,    # Reduced from 300\n",
+    "    max_depth=10,         # Reduced from 8\n",
+    "    learning_rate=0.05,\n",
+    "    subsample=0.8,\n",
+    "    colsample_bytree=0.8,\n",
+    "    min_child_weight=5,\n",
+    "    gamma=0.1,\n",
+    "    tree_method='gpu_hist',\n",
+    "    predictor='gpu_predictor',\n",
+    "    random_state=RANDOM_STATE,\n",
+    "    n_jobs=-1,\n",
+    "    verbosity=1\n",
+    ")\n",
+    "\n",
+    "xgb_reg.fit(\n",
+    "    X_train, y_reg_train,\n",
+    "    eval_set=[(X_val, y_reg_val)],\n",
+    "    verbose=50\n",
+    ")\n",
+    "\n",
+    "# Predictions\n",
+    "xgb_reg_pred_val = np.maximum(xgb_reg.predict(X_val), 0)\n",
+    "\n",
+    "# Evaluation\n",
+    "xgb_reg_mae_val = mean_absolute_error(y_reg_val, xgb_reg_pred_val)\n",
+    "xgb_reg_rmse_val = np.sqrt(mean_squared_error(y_reg_val, xgb_reg_pred_val))\n",
+    "xgb_reg_r2_val = r2_score(y_reg_val, xgb_reg_pred_val)\n",
+    "\n",
+    "print(f\"\\nXGBoost Regressor Results:\")\n",
+    "print(f\"Validation MAE: {xgb_reg_mae_val:.4f}\")\n",
+    "print(f\"Validation RMSE: {xgb_reg_rmse_val:.4f}\")\n",
+    "print(f\"Validation R²: {xgb_reg_r2_val:.4f}\")\n",
+    "\n",
+    "# Store results\n",
+    "xgb_reg_results = {\n",
+    "    'mae': xgb_reg_mae_val,\n",
+    "    'rmse': xgb_reg_rmse_val,\n",
+    "    'r2': xgb_reg_r2_val\n",
+    "}\n",
+    "del xgb_reg_pred_val, xgb_reg\n",
+    "clear_memory()\n",
+    "get_memory_usage()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 19,
+   "id": "ed18738d",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-16T18:42:27.862315Z",
+     "iopub.status.busy": "2025-11-16T18:42:27.861856Z",
+     "iopub.status.idle": "2025-11-16T18:42:28.371451Z",
+     "shell.execute_reply": "2025-11-16T18:42:28.370552Z"
+    },
+    "papermill": {
+     "duration": 0.520465,
+     "end_time": "2025-11-16T18:42:28.372622",
+     "exception": false,
+     "start_time": "2025-11-16T18:42:27.852157",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      "=== Regression Model Comparison ===\n",
+      "Random Forest - Val MAE: 32.0043, RMSE: 163.7985, R²: 0.9810\n",
+      "XGBoost - Val MAE: 33.1134, RMSE: 346.7971, R²: 0.9150\n",
+      "\n",
+      "✓ Random Forest selected as best regressor\n",
+      "✓ Cleared PyTorch GPU cache\n",
+      "✓ Cleared CuPy memory pool\n",
+      "✓ Garbage collection completed\n",
+      "RAM Usage: 2.88 GB\n",
+      "GPU Memory: 0.12 GB / 15.00 GB\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Compare regressors and choose the best\n",
+    "print(\"\\n=== Regression Model Comparison ===\")\n",
+    "print(f\"Random Forest - Val MAE: {rf_reg_results['mae']:.4f}, RMSE: {rf_reg_results['rmse']:.4f}, R²: {rf_reg_results['r2']:.4f}\")\n",
+    "print(f\"XGBoost - Val MAE: {xgb_reg_results['mae']:.4f}, RMSE: {xgb_reg_results['rmse']:.4f}, R²: {xgb_reg_results['r2']:.4f}\")\n",
+    "\n",
+    "if xgb_reg_results['mae'] < rf_reg_results['mae']:\n",
+    "    best_reg_type = 'xgboost'\n",
+    "    print(\"\\n✓ XGBoost selected as best regressor\")\n",
+    "else:\n",
+    "    best_reg_type = 'rf'\n",
+    "    print(\"\\n✓ Random Forest selected as best regressor\")\n",
+    "\n",
+    "# Clear validation models to make room for final training\n",
+    "del rf_clf, rf_reg, X_train, X_val, y_class_train, y_class_val, y_reg_train, y_reg_val\n",
+    "clear_memory()\n",
+    "get_memory_usage()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "b5681497",
+   "metadata": {
+    "papermill": {
+     "duration": 0.0084,
+     "end_time": "2025-11-16T18:42:28.389589",
+     "exception": false,
+     "start_time": "2025-11-16T18:42:28.381189",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "## 7. Train Final Models & Make Predictions"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "id": "c1bd453e",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-16T18:42:28.407417Z",
+     "iopub.status.busy": "2025-11-16T18:42:28.406810Z",
+     "iopub.status.idle": "2025-11-16T18:42:28.448200Z",
+     "shell.execute_reply": "2025-11-16T18:42:28.447452Z"
+    },
+    "papermill": {
+     "duration": 0.051621,
+     "end_time": "2025-11-16T18:42:28.449390",
+     "exception": false,
+     "start_time": "2025-11-16T18:42:28.397769",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      "=== Training Final Models on Full Data ===\n",
+      "Final model will predict 2572 classes\n",
+      "RAM Usage: 2.88 GB\n",
+      "GPU Memory: 0.12 GB / 15.00 GB\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Train final models on full training data\n",
+    "print(\"\\n=== Training Final Models on Full Data ===\")\n",
+    "\n",
+    "# Re-encode with ALL classes for final model\n",
+    "le_target_final = LabelEncoder()\n",
+    "y_class_all_encoded = le_target_final.fit_transform(y_class.astype(str)).astype('int32')\n",
+    "\n",
+    "print(f\"Final model will predict {len(le_target_final.classes_)} classes\")\n",
+    "get_memory_usage()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 21,
+   "id": "7c89f6d5",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-16T18:42:28.467148Z",
+     "iopub.status.busy": "2025-11-16T18:42:28.466685Z",
+     "iopub.status.idle": "2025-11-16T18:43:57.571727Z",
+     "shell.execute_reply": "2025-11-16T18:43:57.570822Z"
+    },
+    "papermill": {
+     "duration": 89.114945,
+     "end_time": "2025-11-16T18:43:57.572968",
+     "exception": false,
+     "start_time": "2025-11-16T18:42:28.458023",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      "Training final classifier (Random Forest)...\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "[Parallel(n_jobs=-1)]: Using backend ThreadingBackend with 4 concurrent workers.\n",
+      "[Parallel(n_jobs=-1)]: Done  42 tasks      | elapsed:   11.6s\n",
+      "[Parallel(n_jobs=-1)]: Done 192 tasks      | elapsed:   51.2s\n",
+      "[Parallel(n_jobs=-1)]: Done 300 out of 300 | elapsed:  1.3min finished\n",
+      "[Parallel(n_jobs=4)]: Using backend ThreadingBackend with 4 concurrent workers.\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      "Making classification predictions...\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "[Parallel(n_jobs=4)]: Done  42 tasks      | elapsed:    1.0s\n",
+      "[Parallel(n_jobs=4)]: Done 192 tasks      | elapsed:    3.8s\n",
+      "[Parallel(n_jobs=4)]: Done 300 out of 300 | elapsed:    5.7s finished\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Classification predictions shape: (2685,)\n",
+      "✓ Cleared PyTorch GPU cache\n",
+      "✓ Cleared CuPy memory pool\n",
+      "✓ Garbage collection completed\n",
+      "RAM Usage: 2.95 GB\n",
+      "GPU Memory: 0.12 GB / 15.00 GB\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Train final classifier (Random Forest for stability with rare classes)\n",
+    "print(\"\\nTraining final classifier (Random Forest)...\")\n",
+    "final_clf = RandomForestClassifier(\n",
+    "    n_estimators=300,\n",
+    "    max_depth=30,\n",
+    "    min_samples_split=5,\n",
+    "    min_samples_leaf=2,\n",
+    "    max_features='sqrt',\n",
+    "    random_state=RANDOM_STATE,\n",
+    "    n_jobs=-1,\n",
+    "    verbose=1\n",
+    ")\n",
+    "final_clf.fit(X, y_class_all_encoded)\n",
+    "\n",
+    "# Make classification predictions immediately to free model memory\n",
+    "print(\"\\nMaking classification predictions...\")\n",
+    "test_class_pred_encoded = final_clf.predict(X_test)\n",
+    "test_class_pred = le_target_final.inverse_transform(test_class_pred_encoded)\n",
+    "print(f\"Classification predictions shape: {test_class_pred.shape}\")\n",
+    "\n",
+    "# Clear classifier\n",
+    "del final_clf, test_class_pred_encoded, y_class_all_encoded\n",
+    "clear_memory()\n",
+    "get_memory_usage()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 22,
+   "id": "b391939a",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-16T18:43:57.592196Z",
+     "iopub.status.busy": "2025-11-16T18:43:57.591561Z",
+     "iopub.status.idle": "2025-11-16T18:44:01.486624Z",
+     "shell.execute_reply": "2025-11-16T18:44:01.485678Z"
+    },
+    "papermill": {
+     "duration": 3.905652,
+     "end_time": "2025-11-16T18:44:01.487831",
+     "exception": false,
+     "start_time": "2025-11-16T18:43:57.582179",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      "Training final regressor (Random Forest)...\n"
+     ]
+    },
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "[Parallel(n_jobs=-1)]: Using backend ThreadingBackend with 4 concurrent workers.\n",
+      "[Parallel(n_jobs=-1)]: Done  42 tasks      | elapsed:    0.5s\n",
+      "[Parallel(n_jobs=-1)]: Done 192 tasks      | elapsed:    2.3s\n",
+      "[Parallel(n_jobs=-1)]: Done 300 out of 300 | elapsed:    3.6s finished\n",
+      "[Parallel(n_jobs=4)]: Using backend ThreadingBackend with 4 concurrent workers.\n",
+      "[Parallel(n_jobs=4)]: Done  42 tasks      | elapsed:    0.0s\n",
+      "[Parallel(n_jobs=4)]: Done 192 tasks      | elapsed:    0.0s\n",
+      "[Parallel(n_jobs=4)]: Done 300 out of 300 | elapsed:    0.1s finished\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      "Making regression predictions...\n",
+      "Regression predictions shape: (2685,)\n",
+      "✓ Cleared PyTorch GPU cache\n",
+      "✓ Cleared CuPy memory pool\n",
+      "✓ Garbage collection completed\n",
+      "RAM Usage: 3.01 GB\n",
+      "GPU Memory: 0.12 GB / 15.00 GB\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Train final regressor\n",
+    "print(\"\\nTraining final regressor (Random Forest)...\")\n",
+    "final_reg = RandomForestRegressor(\n",
+    "    n_estimators=300,\n",
+    "    max_depth=30,\n",
+    "    min_samples_split=5,\n",
+    "    min_samples_leaf=2,\n",
+    "    max_features='sqrt',\n",
+    "    random_state=RANDOM_STATE,\n",
+    "    n_jobs=-1,\n",
+    "    verbose=1\n",
+    ")\n",
+    "final_reg.fit(X, y_reg)\n",
+    "\n",
+    "# Make regression predictions immediately\n",
+    "print(\"\\nMaking regression predictions...\")\n",
+    "test_reg_pred = np.maximum(final_reg.predict(X_test), 0)\n",
+    "print(f\"Regression predictions shape: {test_reg_pred.shape}\")\n",
+    "\n",
+    "# Clear regressor and training data\n",
+    "del final_reg, X, y_class, y_reg, X_test\n",
+    "clear_memory()\n",
+    "get_memory_usage()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 23,
+   "id": "c43d2d98",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-16T18:44:01.507064Z",
+     "iopub.status.busy": "2025-11-16T18:44:01.506268Z",
+     "iopub.status.idle": "2025-11-16T18:44:01.511219Z",
+     "shell.execute_reply": "2025-11-16T18:44:01.510300Z"
+    },
+    "papermill": {
+     "duration": 0.015476,
+     "end_time": "2025-11-16T18:44:01.512392",
+     "exception": false,
+     "start_time": "2025-11-16T18:44:01.496916",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      "Sample predictions:\n",
+      "MasterItemNo: ['63644' '51163' '61508' '64171' '51249']\n",
+      "QtyShipped: [ 10.46454813 103.03714763  28.46401693   2.48817519  24.35101799]\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(f\"\\nSample predictions:\")\n",
+    "print(f\"MasterItemNo: {test_class_pred[:5]}\")\n",
+    "print(f\"QtyShipped: {test_reg_pred[:5]}\")"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "178cdf77",
+   "metadata": {
+    "papermill": {
+     "duration": 0.008589,
+     "end_time": "2025-11-16T18:44:01.529843",
+     "exception": false,
+     "start_time": "2025-11-16T18:44:01.521254",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "## 8. Create Submission"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 24,
+   "id": "0c369fc2",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-16T18:44:01.548355Z",
+     "iopub.status.busy": "2025-11-16T18:44:01.548134Z",
+     "iopub.status.idle": "2025-11-16T18:44:01.734549Z",
+     "shell.execute_reply": "2025-11-16T18:44:01.733805Z"
+    },
+    "papermill": {
+     "duration": 0.197085,
+     "end_time": "2025-11-16T18:44:01.735718",
+     "exception": false,
+     "start_time": "2025-11-16T18:44:01.538633",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      "Creating submission file...\n",
+      "✓ Cleared PyTorch GPU cache\n",
+      "✓ Cleared CuPy memory pool\n",
+      "✓ Garbage collection completed\n",
+      "\n",
+      "Validating submission...\n",
+      "✓ Validation passed!\n",
+      "\n",
+      "Submission shape: (2685, 3)\n",
+      "\n",
+      "First 10 rows:\n",
+      "        id MasterItemNo  QtyShipped\n",
+      "0   3708.0        63644       10.46\n",
+      "1   6302.0        51163      103.04\n",
+      "2   8687.0        61508       28.46\n",
+      "3    361.0        64171        2.49\n",
+      "4  13231.0        51249       24.35\n",
+      "5   9001.0        43459        3.77\n",
+      "6   1924.0        46650      140.57\n",
+      "7   8950.0        66649       21.32\n",
+      "8   4449.0        62742       30.25\n",
+      "9   1954.0        63799       40.31\n",
+      "\n",
+      "Submission statistics:\n",
+      "                 id   QtyShipped\n",
+      "count   2685.000000  2685.000000\n",
+      "mean    6697.203613    40.064950\n",
+      "std     3904.015137    60.554709\n",
+      "min        1.000000     0.000000\n",
+      "25%     3317.000000     6.550000\n",
+      "50%     6731.000000    18.160000\n",
+      "75%    10025.000000    44.110000\n",
+      "max    13421.000000   799.250000\n",
+      "\n",
+      "✓ Submission saved to 'submission.csv'\n",
+      "RAM Usage: 3.01 GB\n",
+      "GPU Memory: 0.12 GB / 15.00 GB\n"
+     ]
+    }
+   ],
+   "source": [
+    "# Create submission\n",
+    "print(\"\\nCreating submission file...\")\n",
+    "\n",
+    "submission = pd.DataFrame({\n",
+    "    'id': test_ids,\n",
+    "    'MasterItemNo': test_class_pred,\n",
+    "    'QtyShipped': np.round(test_reg_pred, 2)\n",
+    "})\n",
+    "\n",
+    "# Clear predictions\n",
+    "del test_class_pred, test_reg_pred, test_ids\n",
+    "clear_memory()\n",
+    "\n",
+    "# Validate submission\n",
+    "print(\"\\nValidating submission...\")\n",
+    "assert submission['id'].notna().all(), \"id has NaN values\"\n",
+    "assert submission['MasterItemNo'].notna().all(), \"MasterItemNo has NaN values\"\n",
+    "assert submission['QtyShipped'].notna().all(), \"QtyShipped has NaN values\"\n",
+    "assert (submission['QtyShipped'] >= 0).all(), \"QtyShipped has negative values\"\n",
+    "\n",
+    "print(\"✓ Validation passed!\")\n",
+    "print(f\"\\nSubmission shape: {submission.shape}\")\n",
+    "print(\"\\nFirst 10 rows:\")\n",
+    "print(submission.head(10))\n",
+    "print(\"\\nSubmission statistics:\")\n",
+    "print(submission.describe())\n",
+    "\n",
+    "# Save submission\n",
+    "submission.to_csv('submission.csv', index=False)\n",
+    "print(\"\\n✓ Submission saved to 'submission.csv'\")\n",
+    "\n",
+    "get_memory_usage()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "id": "1480cef3",
+   "metadata": {
+    "papermill": {
+     "duration": 0.008921,
+     "end_time": "2025-11-16T18:44:01.754400",
+     "exception": false,
+     "start_time": "2025-11-16T18:44:01.745479",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "## 9. Summary"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 25,
+   "id": "17130eb2",
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2025-11-16T18:44:01.773708Z",
+     "iopub.status.busy": "2025-11-16T18:44:01.773139Z",
+     "iopub.status.idle": "2025-11-16T18:44:01.810792Z",
+     "shell.execute_reply": "2025-11-16T18:44:01.809981Z"
+    },
+    "papermill": {
+     "duration": 0.048742,
+     "end_time": "2025-11-16T18:44:01.812025",
+     "exception": false,
+     "start_time": "2025-11-16T18:44:01.763283",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "\n",
+      "======================================================================\n",
+      "FINAL RESULTS SUMMARY\n",
+      "======================================================================\n",
+      "\n",
+      "📊 CLASSIFICATION (MasterItemNo)\n",
+      "  Best Validation Model: Random Forest\n",
+      "  Final Model: RandomForestClassifier (better for rare classes)\n",
+      "  Validation Accuracy: 0.7947\n",
+      "  Number of Classes: 2572\n",
+      "\n",
+      "📈 REGRESSION (QtyShipped)\n",
+      "  Best Model: Random Forest\n",
+      "  Validation MAE: 32.0043\n",
+      "  Validation RMSE: 163.7985\n",
+      "  Validation R²: 0.9810\n",
+      "\n",
+      "🔧 FEATURES\n",
+      "  Total Features Used: 56\n",
+      "  Feature Engineering Applied: ✓\n",
+      "  Memory Optimization: float32 dtype ✓\n",
+      "  GPU Memory Management: ✓\n",
+      "\n",
+      "📤 SUBMISSION\n",
+      "  File: submission.csv\n",
+      "  Rows: 2,685\n",
+      "  Predictions Range: [0.00, 799.25]\n",
+      "\n",
+      "======================================================================\n",
+      "✓ Pipeline Complete! Ready for submission.\n",
+      "======================================================================\n",
+      "RAM Usage: 3.01 GB\n",
+      "GPU Memory: 0.12 GB / 15.00 GB\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(\"\\n\" + \"=\"*70)\n",
+    "print(\"FINAL RESULTS SUMMARY\")\n",
+    "print(\"=\"*70)\n",
+    "\n",
+    "print(\"\\n📊 CLASSIFICATION (MasterItemNo)\")\n",
+    "print(f\"  Best Validation Model: {'XGBoost' if best_clf_type == 'xgboost' else 'Random Forest'}\")\n",
+    "print(f\"  Final Model: RandomForestClassifier (better for rare classes)\")\n",
+    "print(f\"  Validation Accuracy: {max(rf_clf_results['val_acc'], xgb_clf_results['val_acc']):.4f}\")\n",
+    "print(f\"  Number of Classes: {len(le_target_final.classes_)}\")\n",
+    "\n",
+    "print(\"\\n📈 REGRESSION (QtyShipped)\")\n",
+    "print(f\"  Best Model: {'XGBoost' if best_reg_type == 'xgboost' else 'Random Forest'}\")\n",
+    "print(f\"  Validation MAE: {min(rf_reg_results['mae'], xgb_reg_results['mae']):.4f}\")\n",
+    "print(f\"  Validation RMSE: {min(rf_reg_results['rmse'], xgb_reg_results['rmse']):.4f}\")\n",
+    "print(f\"  Validation R²: {max(rf_reg_results['r2'], xgb_reg_results['r2']):.4f}\")\n",
+    "\n",
+    "print(\"\\n🔧 FEATURES\")\n",
+    "print(f\"  Total Features Used: {len(feature_cols)}\")\n",
+    "print(f\"  Feature Engineering Applied: ✓\")\n",
+    "print(f\"  Memory Optimization: float32 dtype ✓\")\n",
+    "print(f\"  GPU Memory Management: ✓\")\n",
+    "\n",
+    "print(\"\\n📤 SUBMISSION\")\n",
+    "print(f\"  File: submission.csv\")\n",
+    "print(f\"  Rows: {len(submission):,}\")\n",
+    "print(f\"  Predictions Range: [{submission['QtyShipped'].min():.2f}, {submission['QtyShipped'].max():.2f}]\")\n",
+    "\n",
+    "print(\"\\n\" + \"=\"*70)\n",
+    "print(\"✓ Pipeline Complete! Ready for submission.\")\n",
+    "print(\"=\"*70)\n",
+    "\n",
+    "get_memory_usage()"
+   ]
+  }
+ ],
+ "metadata": {
+  "kaggle": {
+   "accelerator": "nvidiaTeslaT4",
+   "dataSources": [
+    {
+     "databundleVersionId": 13502461,
+     "sourceId": 112393,
+     "sourceType": "competition"
+    }
+   ],
+   "dockerImageVersionId": 31193,
+   "isGpuEnabled": true,
+   "isInternetEnabled": true,
+   "language": "python",
+   "sourceType": "notebook"
+  },
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.11.13"
+  },
+  "papermill": {
+   "default_parameters": {},
+   "duration": 363.096647,
+   "end_time": "2025-11-16T18:44:04.269705",
+   "environment_variables": {},
+   "exception": null,
+   "input_path": "__notebook__.ipynb",
+   "output_path": "__notebook__.ipynb",
+   "parameters": {},
+   "start_time": "2025-11-16T18:38:01.173058",
+   "version": "2.6.0"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
