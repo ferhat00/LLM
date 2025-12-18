@@ -1,5 +1,0 @@
-,avg_price_eur,avg_price_eur,avg_price_eur,avg_price_eur,production_hl,production_hl,production_hl,production_hl,exports_k_bottles,exports_k_bottles,investment_score,investment_score
-,mean,std,min,max,mean,std,min,max,mean,std,mean,std
-region,,,,,,,,,,,,
-Bordeaux,920.89,54.55,837.55,990.25,836079.16,36851.42,775027.12,881589.72,41956.02,2183.21,7.26,0.48
-Burgundy,2614.59,124.36,2456.26,2832.78,140294.82,24330.62,91959.34,171825.94,12216.95,303.9,8.93,0.3
